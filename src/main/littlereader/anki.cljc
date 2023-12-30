@@ -75,6 +75,13 @@
                "ease" ease})
             cards)})))
 
+(defn raw-input-results [data]
+  (go
+    (doseq [[k v] data]
+      (answerCards
+        (get attempt k)
+        v))))
+
 (defn input-results [data]
   (go
     (doseq [[k v] data]
