@@ -1,6 +1,7 @@
 (ns littlereader.frontend
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
+    [cljs.core.async :refer [chan take! <!] :as async]
     [helix.core :refer [defnc $ <>]]
     [helix.hooks :as hooks]
     [helix.dom :as d]
@@ -13,14 +14,19 @@
                                    connect-chan]]))
 
 (defonce an-atm
-  (atom {:pending-input {:again #{}
+  (atom {:due-now #{}
+         :pending-input {:again #{}
                          :hard  #{}
                          :good  #{}
                          :easy  #{}}}))
 
 (defmethod handle-effect
+  :update-due-now ([_]
+                   (go (swap! an-atm assoc :due-now (set (<! (anki/due-now)))))))
+(defmethod handle-effect
   :submit ([[x]]
            (anki/raw-input-results (:pending-input @an-atm))
+           (handle-effect [[:update-due-now]])
            (handle-effect [[:clear-staging-area]])))
 (defmethod handle-effect
   :clear-staging-area ([_] (swap! an-atm assoc-in [:pending-input] {:again #{}
@@ -105,13 +111,21 @@
         (little-button :easy)))))
 
 (defnc words-due-now [{:keys [dispatch c]}]
-  (let [[state set-state] (connect-chan nil
-                            (go (<! (anki/cards->words' (<! (anki/due-now))))))]
-    (d/div {:style {:display "flex" :flex-wrap "wrap"}}
-      (for [[id wrd] state]
-        ($ word {:id id :word wrd :key id :dispatch (dispatch-prop dispatch id)})))))
+  (let
+    [[state' set-state'] (connect-atom an-atm [:due-now])
+     [state set-state] (helix.hooks/use-state #{})]
+    (helix.hooks/use-effect
+      [state']
+      (go (set-state (<! (anki/cards->words' state')))))
+    (d/div
+        (d/h3 "Due now")
+        (d/div {:style {:display "flex" :flex-wrap "wrap"}}
+               (for [[id wrd] state]
+                 ($ word {:id id :word wrd :key id
+                          :dispatch (dispatch-prop dispatch id)}))))))
 
 (defnc app []
+  (helix.hooks/use-effect :once (handle-effect [[:update-due-now]]))
   (let [[state set-state] (connect-atom an-atm)]
     (d/div
       {}
