@@ -8,7 +8,8 @@
  :dev-http
  {8080 "public"}
  :dependencies
- [[lilactown/helix "0.2.0"]
+ [[cider/cider-nrepl "0.44.0"]
+  [lilactown/helix "0.2.0"]
   [cljs-http/cljs-http "0.1.48"]]
  :builds
  {:app {:target :browser
