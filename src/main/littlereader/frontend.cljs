@@ -21,6 +21,8 @@
                          :easy  #{}}}))
 
 (defmethod handle-effect
+  :synchronize ([_] (anki/synchronize)))
+(defmethod handle-effect
   :update-due-now ([_]
                    (go (swap! an-atm assoc :due-now (set (<! (anki/due-now)))))))
 (defmethod handle-effect
@@ -129,7 +131,8 @@
   (let [[state set-state] (connect-atom an-atm)]
     (d/div
       {}
-      "Hello, World!"
+      (d/button {:on-click #(handle-effect [[:synchronize]])
+                 :class ["btn" "btn-primary"]} "Synchronize")
       (d/br)
       (str state)
       ($ staging-area {:dispatch (dispatch-prop handle-effect)})
