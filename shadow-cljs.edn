@@ -3,14 +3,13 @@
  ["src/dev"
   "src/main"
   "src/test"]
- :nrepl
- {:write-port-file true}
- :dev-http
- {8080 "public"}
- :dependencies
- [[cider/cider-nrepl "0.44.0"]
-  [lilactown/helix "0.2.0"]
-  [cljs-http/cljs-http "0.1.48"]]
+ :deps true
+ :nrepl {:write-port-file true}
+ :dev-http {8080 "public"}
+ ; :dependencies
+ ; [[cider/cider-nrepl "0.44.0"]
+ ;  [lilactown/helix "0.2.0"]
+ ;  [cljs-http/cljs-http "0.1.48"]]
  :builds
  {:app {:target :browser
         :output-dir "public/js"
