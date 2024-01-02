@@ -3,3 +3,4 @@
 /public/js/
 /.cpcache/
 /.nrepl-port
+/.clj-kondo/.cache/
