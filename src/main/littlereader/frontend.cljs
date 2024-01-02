@@ -15,6 +15,7 @@
 
 (defonce an-atm
   (atom {:due-now #{}
+         :due-by-tomorrow #{}
          :pending-input {:again #{}
                          :hard  #{}
                          :good  #{}
@@ -23,8 +24,17 @@
 (defmethod handle-effect
   :synchronize ([_] (anki/synchronize)))
 (defmethod handle-effect
-  :update-due-now ([_]
-                   (go (swap! an-atm assoc :due-now (set (<! (anki/due-now)))))))
+  :update-due-by-tomorrow
+  ([_]
+   (go
+     (swap! an-atm assoc :due-by-tomorrow
+            (set (<! (anki/due-by-tomorrow)))))))
+(defmethod handle-effect
+  :update-due-now
+  ([_]
+   (go
+     (swap! an-atm assoc :due-now
+            (set (<! (anki/due-now)))))))
 (defmethod handle-effect
   :submit ([[x]]
            (anki/raw-input-results (:pending-input @an-atm))
@@ -112,19 +122,19 @@
         (little-button :good)
         (little-button :easy)))))
 
-(defnc words-due-now [{:keys [dispatch c]}]
+(defnc words [{:keys [dispatch word-ids-hook h]}]
   (let
-    [[state' set-state'] (connect-atom an-atm [:due-now])
+    [[word-ids _] word-ids-hook
      [state set-state] (helix.hooks/use-state #{})]
     (helix.hooks/use-effect
-      [state']
-      (go (set-state (<! (anki/cards->words' state')))))
+      [word-ids]
+      (go (set-state (<! (anki/cards->words' word-ids)))))
     (d/div
-        (d/h3 "Due now")
-        (d/div {:style {:display "flex" :flex-wrap "wrap"}}
-               (for [[id wrd] state]
-                 ($ word {:id id :word wrd :key id
-                          :dispatch (dispatch-prop dispatch id)}))))))
+      h
+      (d/div {:style {:display "flex" :flex-wrap "wrap"}}
+             (for [[id wrd] (sort-by second state)]
+               ($ word {:id id :word wrd :key id
+                        :dispatch (dispatch-prop dispatch id)}))))))
 
 (defnc app []
   (helix.hooks/use-effect :once (handle-effect [[:update-due-now]]))
@@ -137,7 +147,14 @@
       (str state)
       ($ staging-area {:dispatch (dispatch-prop handle-effect)})
       (d/br)
-      ($ words-due-now {:dispatch (dispatch-prop handle-effect)}))))
+      ($ words
+         {:h (d/h3 "Due now")
+          :word-ids-hook (connect-atom an-atm [:due-now])
+          :path [:due-now] :dispatch (dispatch-prop handle-effect)})
+      ($ words
+         {:h (d/h3 "Due by tomorrow")
+          :word-ids-hook (connect-atom an-atm [:due-by-tomorrow])
+          :dispatch (dispatch-prop handle-effect)}))))
 
 (defonce root (rdom/createRoot (js/document.getElementById "app")))
 (.render root ($ app))
