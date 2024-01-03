@@ -7,7 +7,11 @@
     [littlereader.ui-frame :refer [handle-effect]]))
 
 (defmethod handle-effect
-  :synchronize ([_] (anki/synchronize)))
+  :synchronize
+  ([_]
+   (anki/synchronize)
+   (handle-effect [[:update-due-by-tomorrow]])
+   (handle-effect [[:update-due-now]])))
 (defmethod handle-effect
   :update-due-by-tomorrow
   ([_]

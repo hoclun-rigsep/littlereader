@@ -10,69 +10,21 @@
     [littlereader.state :refer [an-atm]]
     [littlereader.anki :as anki]
     [littlereader.ui-frame :refer [dispatch-prop
-                                   effect-dispatcher
+                                   ; effect-dispatcher
                                    handle-effect
                                    connect-atom
                                    connect-chan]]))
 
-(defonce an-atm
-  (atom {:due-now #{}
-         :due-by-tomorrow #{}
-         :pending-input {:again #{}
-                         :hard  #{}
-                         :good  #{}
-                         :easy  #{}}}))
 
-(defmethod handle-effect
-  :synchronize ([_] (anki/synchronize)))
-(defmethod handle-effect
-  :update-due-by-tomorrow
-  ([_]
-   (go
-     (swap! an-atm assoc :due-by-tomorrow
-            (set (<! (anki/due-by-tomorrow)))))))
-(defmethod handle-effect
-  :update-due-now
-  ([_]
-   (go
-     (swap! an-atm assoc :due-now
-            (set (<! (anki/due-now)))))))
-(defmethod handle-effect
-  :submit ([[x]]
-           (anki/raw-input-results (:pending-input @an-atm))
-           (handle-effect [[:update-due-now]])
-           (handle-effect [[:clear-staging-area]])))
-(defmethod handle-effect
-  :clear-staging-area ([_] (swap! an-atm assoc-in [:pending-input] {:again #{}
-                                                                    :hard  #{}
-                                                                    :good  #{}
-                                                                    :easy  #{}})))
-(defmethod handle-effect
-  :stage-card ([[[typ path] attempt]]
-               (swap! an-atm update-in [:pending-input attempt] conj (first path))))
-(defmethod handle-effect
-  :unstage-card ([[[typ path] attempt]]  ;; maybe generalize with specter
-               (swap! an-atm update-in (butlast path) #(set (remove (hash-set (last path)) %)))))
-(defmethod handle-effect
-  :an-intent ([[x & args]] (println x args)))
-(defmethod handle-effect
-  :but-click ([[[typ path] arg1]] (println typ path arg1)))
-(defmethod handle-effect
-  :inc-state ([[[_ path]]] (swap! an-atm update-in path inc)))
 
-#_(defnc counter [{:keys [atm dispatch]}]
-  (let [[state set-state] (connect-atom atm)]
-  (d/div
-    (d/button {:on-click #(dispatch [:inc-state])} "inc")
-    )))
 
-(defnc staging-area-word [{:keys [dispatch id word]}]
-  (let [[s s-s] (connect-chan (anki/card->word id))]
+(defnc staging-area-word [{:keys [dispatch id]}]
+  (let [[s] (connect-chan (anki/card->word id))]
     (d/span {:style {:margin "4px"} :on-click #(dispatch [:unstage-card])} s)))
 
 (defnc staging-area [{:keys [dispatch]}]
-  (let [[s s-s] (connect-atom an-atm [:pending-input])]
-    (<> 
+  (let [[s] (connect-atom an-atm [:pending-input])]
+    (<>
       (d/h3 "Staging area")
       (d/div
         {:style {:display "flex" :margin "30px" :gap "15px"}}
@@ -94,17 +46,21 @@
                  :on-click #(handle-effect [[:clear-staging-area]])}
                 "Clear"))))
 
-(defnc word [{:keys [dispatch id word]}]
-  (let [attempt->color {:again "red" :hard "yellow" :good "green" :easy "blue"}
+(defnc word-you-can-stage [{:keys [dispatch id word]}]
+  (let [[s] (connect-atom an-atm [:pending-input])
+
+        attempt->color
+        {:again "red" :hard "yellow" :good "green" :easy "blue"}
 
         little-button
         (fn [x]
           (d/span
             {:style
-             {:cursor "pointer" :width "3rem" :background-color (x attempt->color)}
+             {:cursor "pointer" :width "3rem"
+              :background-color (x attempt->color)}
              :on-click
              #(dispatch [:stage-card x])}
-            "    "))]
+            (if ((x s) id) " ⋅  " "    ")))]
     (d/div
       {:style
        {:font-size "3rem"
@@ -133,20 +89,33 @@
       (go (set-state (<! (anki/cards->words' word-ids)))))
     (d/div
       h
+      (d/span (count word-ids))
       (d/div {:style {:display "flex" :flex-wrap "wrap"}}
              (for [[id wrd] (sort-by second state)]
-               ($ word {:id id :word wrd :key id
-                        :dispatch (dispatch-prop dispatch id)}))))))
+               ($ word-you-can-stage
+                  {:id id :word wrd :key id
+                   :dispatch (dispatch-prop dispatch id)}))))))
+
+(defnc state-view []
+  (let [[state] (connect-atom an-atm)
+        [show-state set-show-state] (helix.hooks/use-state false)]
+    (<>
+      (d/button
+        {:class ["btn" "btn-sm" "btn-secondary"]
+         :on-click #(set-show-state not)}
+        "Show")
+      (d/span {:style {:display (if show-state "block" "none")}} (str state)))))
 
 (defnc app []
-  (helix.hooks/use-effect :once (handle-effect [[:update-due-now]]))
-  (let [[state set-state] (connect-atom an-atm)]
-    (d/div
+  (helix.hooks/use-effect :once
+                          (handle-effect [[:update-due-now]])
+                          (handle-effect [[:update-due-by-tomorrow]]))
+  (d/div
       {}
       (d/button {:on-click #(handle-effect [[:synchronize]])
                  :class ["btn" "btn-primary"]} "Synchronize")
+      ($ state-view)
       (d/br)
-      (str state)
       ($ staging-area {:dispatch (dispatch-prop handle-effect)})
       (d/br)
       ($ words
@@ -156,7 +125,7 @@
       ($ words
          {:h (d/h3 "Due by tomorrow")
           :word-ids-hook (connect-atom an-atm [:due-by-tomorrow])
-          :dispatch (dispatch-prop handle-effect)}))))
+          :dispatch (dispatch-prop handle-effect)})))
 
 (defonce root (rdom/createRoot (js/document.getElementById "app")))
 (.render root ($ app))
