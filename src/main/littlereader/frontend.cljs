@@ -111,21 +111,27 @@
                           (handle-effect [[:update-due-now]])
                           (handle-effect [[:update-due-by-tomorrow]]))
   (d/div
-      {}
-      (d/button {:on-click #(handle-effect [[:synchronize]])
-                 :class ["btn" "btn-primary"]} "Synchronize")
-      ($ state-view)
-      (d/br)
-      ($ staging-area {:dispatch (dispatch-prop handle-effect)})
-      (d/br)
-      ($ words
-         {:h (d/h3 "Due now")
-          :word-ids-hook (connect-atom an-atm [:due-now])
-          :path [:due-now] :dispatch (dispatch-prop handle-effect)})
-      ($ words
-         {:h (d/h3 "Due by tomorrow")
-          :word-ids-hook (connect-atom an-atm [:due-by-tomorrow])
-          :dispatch (dispatch-prop handle-effect)})))
+    {}
+    (d/button {:on-click #(handle-effect [[:synchronize]])
+               :class ["btn" "btn-primary"]} "Synchronize")
+    ($ state-view)
+    (d/br)
+    ($ staging-area {:dispatch (dispatch-prop handle-effect)})
+    (d/br)
+    ($ words
+       {:h (d/h3 "Due now!")
+        :dispatch (dispatch-prop handle-effect)
+        :word-ids-hook
+        (c-a an-atm [:due-now]
+             (comp keys (partial into {} (filter (fn [[_ v]] (:due-now v))))))})
+    ($ words
+       {:h (d/h3 "Due now")
+        :word-ids-hook (connect-atom an-atm [:keys :due-now])
+        :path [:due-now] :dispatch (dispatch-prop handle-effect)})
+    ($ words
+       {:h (d/h3 "Due by tomorrow")
+        :word-ids-hook (connect-atom an-atm [:keys :due-by-tomorrow])
+        :dispatch (dispatch-prop handle-effect)})))
 
 (defonce root (rdom/createRoot (js/document.getElementById "app")))
 (.render root ($ app))

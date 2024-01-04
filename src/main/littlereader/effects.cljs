@@ -17,13 +17,13 @@
   ([_]
    (go
      (swap! an-atm assoc :due-by-tomorrow
-            (set (<! (anki/due-by-tomorrow)))))))
+            (zipmap (<! (anki/due-by-tomorrow)) (repeat true))))))
 (defmethod handle-effect
   :update-due-now
   ([_]
    (go
      (swap! an-atm assoc :due-now
-            (set (<! (anki/due-now)))))))
+            (zipmap (<! (anki/due-now)) (repeat {:due-now true}))))))
 (defmethod handle-effect
   :submit ([[_]]
            (anki/raw-input-results (:pending-input @an-atm))

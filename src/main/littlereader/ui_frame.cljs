@@ -7,6 +7,26 @@
     [helix.dom :as d]
     ["react-dom/client" :as rdom]))
 
+(defn c-a
+  ([atm]
+   (c-a atm [] identity))
+  ([atm keypath]
+   (c-a atm keypath identity))
+  ([atm keypath f]
+   (let [watch-key (js/Object.)
+         [state set-state] (hooks/use-state (f (get-in @atm keypath)))]
+     ;; do I need to clean up the watch?
+     (hooks/use-effect
+       :once
+       (add-watch atm watch-key
+                  (fn [k r o n]
+                    (let [o (f (get-in o keypath o))
+                          n (f (get-in n keypath n))]
+                      (when
+                        (not= o n)
+                        (set-state n)))))
+       #(remove-watch atm watch-key))
+     [state set-state])))
 (defn connect-atom
   ([atm]
    (connect-atom atm []))
