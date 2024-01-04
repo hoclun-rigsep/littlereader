@@ -126,12 +126,8 @@
         (c-a an-atm [:due-now]
              (comp keys (partial into {} (filter (fn [[_ v]] (:due-now v))))))})
     ($ words
-       {:h (d/h3 "Due now")
-        :word-ids-hook (connect-atom an-atm [:keys :due-now])
-        :path [:due-now] :dispatch (dispatch-prop handle-effect)})
-    ($ words
        {:h (d/h3 "Due by tomorrow")
-        :word-ids-hook (connect-atom an-atm [:keys :due-by-tomorrow])
+        :word-ids-hook (c-a an-atm [:due-by-tomorrow] keys)
         :dispatch (dispatch-prop handle-effect)})))
 
 (defonce root (rdom/createRoot (js/document.getElementById "app")))
