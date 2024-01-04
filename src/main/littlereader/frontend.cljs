@@ -13,6 +13,7 @@
                                    ; effect-dispatcher
                                    handle-effect
                                    connect-atom
+                                   c-a
                                    connect-chan]]))
 
 
