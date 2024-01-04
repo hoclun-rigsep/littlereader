@@ -2,8 +2,8 @@
   #?(:cljs (:require-macros [cljs.core.async.macros :refer [go]]))
   (:require #?(:cljs [cljs-http.client :as http]
                :clj  [clj-http.client :as http])
-            #?(:cljs [cljs.core.async :refer [chan take! <!] :as async]
-               :clj  [clojure.core.async :refer [chan take! <!] :as async])))
+            #?(:cljs [cljs.core.async :refer [chan <!] :as async]
+               :clj  [clojure.core.async :refer [chan go <!] :as async])))
 
 (def attempt {:again 1 :hard 2 :good 3 :easy 4 1 1 2 2 3 3 4 4})
 
@@ -22,14 +22,31 @@
                 :json-params {:action "version"
                               :version 6}}))))
 
-(defn act [action params]
-  (http/post
-      "http://localhost:8765"
-      {:channel (chan 1 (comp (map :body) (map (some-fn :result :error))))
-       :with-credentials? false
-       :json-params (merge {:action (name action)
-                            :version 6}
-                           (when params {:params params}))}))
+
+#?(:clj
+   (defn act [action params]
+     (async/thread
+       ((some-fn :result :error)
+        (:body
+          (http/post
+            "http://localhost:8765"
+            {:content-type :json
+             :as :auto
+             :form-params
+             (merge
+               {:action (name action)
+                :version 6}
+               (when params
+                 {:params params}))})))))
+   :cljs
+   (defn act [action params]
+     (http/post
+       "http://localhost:8765"
+       {:channel (chan 1 (comp (map :body) (map (some-fn :result :error))))
+        :with-credentials? false
+        :json-params (merge {:action (name action)
+                             :version 6}
+                            (when params {:params params}))})))
 
 (defn synchronize [] (act :sync nil))
 
