@@ -1,7 +1,9 @@
 (ns littlereader.anki
-  (:require-macros [cljs.core.async.macros :refer [go]])
-  (:require [cljs-http.client :as http]
-            [cljs.core.async :refer [chan take! <!] :as async]))
+  #?(:cljs (:require-macros [cljs.core.async.macros :refer [go]]))
+  (:require #?(:cljs [cljs-http.client :as http]
+               :clj  [clj-http.client :as http])
+            #?(:cljs [cljs.core.async :refer [chan take! <!] :as async]
+               :clj  [clojure.core.async :refer [chan take! <!] :as async])))
 
 (def attempt {:again 1 :hard 2 :good 3 :easy 4 1 1 2 2 3 3 4 4})
 
