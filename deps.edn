@@ -1,6 +1,7 @@
 {:paths ["src/main"]
  :deps {org.clojure/clojure {:mvn/version "1.11.1"}
         org.clojure/core.async {:mvn/version "1.6.681"}
+        dev.weavejester/medley {:mvn/version "1.7.0"}
         ring/ring {:mvn/version "1.11.0"}
         ring/ring-core {:mvn/version "1.11.0"}
         ring/ring-jetty-adapter {:mvn/version "1.11.0"}
