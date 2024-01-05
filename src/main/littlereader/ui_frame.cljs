@@ -1,10 +1,9 @@
 (ns littlereader.ui-frame
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
-    [cljs.core.async :refer [chan take! <! put! pipeline] :as async]
-    [helix.core :refer [defnc $]]
+    [cljs.core.async :refer [chan put! pipeline] :as async]
+    [cljs-http.client :as http]
     [helix.hooks :as hooks]
-    [helix.dom :as d]
     [littlereader.effects :refer [handle-effect]]))
 
 (defn c-a
@@ -19,7 +18,7 @@
      (hooks/use-effect
        :once
        (add-watch atm watch-key
-                  (fn [k r o n]
+                  (fn [_k _r o n]
                     (let [o (f (get-in o keypath o))
                           n (f (get-in n keypath n))]
                       (when
@@ -38,7 +37,7 @@
      (hooks/use-effect
        :once
        (add-watch atm watch-key
-                  (fn [k r o n]
+                  (fn [_k _r o n]
                     (let [o (get-in o keypath o)
                           n (get-in n keypath n)]
                       (when
@@ -84,42 +83,5 @@
   (doseq [intent intents]
     (handle-effect intent)))
 
-(comment
-(def a-chan (chan))
-(def b-chan (chan))
-(def b=loop
-  (go-loop []
-           (println "B" (<! b-chan))
-           (if (= (<! b-chan) 0)
-             0
-             (recur))))
-(def a=loop
-  (go-loop []
-    (println "A" (<! b-chan))
-    (if (= (<! b-chan) 0)
-      0
-      (recur))))
-
-(comment (put! a-chan 121))
-
-
-(defnc counter-component [{:keys [num]}]
-  (let [[state set-state] (connect num a-chan)]
-      (d/div state)))
-
-(defnc somecomp []
-  (let [[state set-state] (hooks/use-state 0)]
-    (hooks/use-effect
-      []
-      (let [cleanup? (chan)]
-        (go-loop []
-                 (let [[v ch] (alts! [a-chan cleanup?])]
-                   (cond
-                     (= ch cleanup?) (println "reatrd")
-                     (nil? v) (println "reatrd")
-                     :else (do (set-state v)
-                               (recur)))))
-        #(do (put! cleanup? true))))
-    (d/div "Hello, Earth!" state)))
-
-)
+(defn send-intent [intent]
+  '(call-backend))
