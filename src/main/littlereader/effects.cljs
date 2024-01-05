@@ -3,8 +3,9 @@
   (:require
     [cljs.core.async :refer [chan take! <! timeout] :as async]
     [littlereader.state :refer [an-atm]]
-    [littlereader.anki :as anki]
-    [littlereader.ui-frame :refer [handle-effect]]))
+    [littlereader.anki :as anki]))
+
+(defmulti handle-effect (comp first first))
 
 (defmethod handle-effect
   :synchronize

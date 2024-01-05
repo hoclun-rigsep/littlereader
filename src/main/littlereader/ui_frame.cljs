@@ -5,7 +5,7 @@
     [helix.core :refer [defnc $]]
     [helix.hooks :as hooks]
     [helix.dom :as d]
-    ["react-dom/client" :as rdom]))
+    [littlereader.effects :refer [handle-effect]]))
 
 (defn c-a
   ([atm]
@@ -27,6 +27,7 @@
                         (set-state n)))))
        #(remove-watch atm watch-key))
      [state set-state])))
+
 (defn connect-atom
   ([atm]
    (connect-atom atm []))
@@ -78,8 +79,6 @@
             [0 1]
             concat
             ids))))))
-
-(defmulti handle-effect (comp first first))
 
 (defn effect-dispatcher [& intents]
   (doseq [intent intents]
