@@ -15,16 +15,20 @@
                                    c-a
                                    connect-chan]]))
 
-
-
+(def ca (partial c-a an-atm))
 
 (defnc staging-area-word [{:keys [dispatch id]}]
   (let [[s] (connect-chan (anki/card->word id))]
     (d/span {:style {:margin "4px"} :on-click #(dispatch [:unstage-card])} s)))
 
 (defnc staging-area [{:keys [dispatch]}]
-  (let [[s] (connect-atom an-atm [:pending-input])]
+  (let [[s] (connect-atom an-atm [:pending-input])
+        [hard] (ca [:words]
+                 (comp
+                   keys
+                   (partial into {} (filter (fn [[_ v]] (:hard v))))) )]
     (<>
+      (d/div (str hard))
       (d/h3 "Staging area")
       (d/div
         {:style {:display "flex" :margin "30px" :gap "15px"}}
@@ -122,11 +126,13 @@
        {:h (d/h3 "Due now!")
         :dispatch (dispatch-prop handle-effect)
         :word-ids-hook
-        (c-a an-atm [:due-now]
+        (c-a an-atm [:words]
              (comp keys (partial into {} (filter (fn [[_ v]] (:due-now v))))))})
     ($ words
        {:h (d/h3 "Due by tomorrow")
-        :word-ids-hook (c-a an-atm [:due-by-tomorrow] keys)
+        :word-ids-hook
+        (c-a an-atm [:words]
+             (comp keys (partial into {} (filter (fn [[_ v]] (:due-now v))))))
         :dispatch (dispatch-prop handle-effect)})))
 
 (defonce root (rdom/createRoot (js/document.getElementById "app")))
