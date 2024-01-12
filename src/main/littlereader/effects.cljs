@@ -17,7 +17,7 @@
   :update-due-by-tomorrow
   ([_]
    (go
-     (let [x (<! (anki/due-now))]
+     (let [x (<! (anki/due-by-tomorrow))]
        (swap!
          an-atm
          (fn [atm]
