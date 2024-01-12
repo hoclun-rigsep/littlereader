@@ -123,6 +123,8 @@
                           (handle-effect [[:update-due-by-tomorrow]]))
   (d/div
     {}
+    (d/button {:on-click #(handle-effect [[:bring-in-random]])
+               :class ["btn" "btn-primary"]} "Bring in random")
     (d/button {:on-click #(handle-effect [[:synchronize]])
                :class ["btn" "btn-primary"]} "Synchronize")
     ($ word-adder {:dispatch (dispatch-prop handle-effect)})

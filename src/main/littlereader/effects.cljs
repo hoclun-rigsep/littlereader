@@ -76,3 +76,10 @@
    (go
      (let [id (first (<! (anki/words->cards [word])))]
        (swap! an-atm update-in [:words id] (fnil #(conj % {}) {}))))))
+(defmethod handle-effect
+  :bring-in-random
+  ([]
+   (go
+     (let [new-word (<! (anki/bring-in-random-new-card))]
+       (swap! an-atm assoc :latest-random-new-word new-word)
+       (handle-effect [[:add-word] new-word])))))
