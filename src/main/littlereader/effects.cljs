@@ -38,11 +38,17 @@
                          (fn [val item] (assoc-in val [item :due-now] true))
                          (-> atm :words)
                          x))))))))
-#_(defmethod handle-effect
-  :submit ([[_]]
-           (anki/raw-input-results (:pending-input @an-atm))
-           (handle-effect [[:update-due-now]])
-           (handle-effect [[:clear-staging-area]])))
+(defmethod handle-effect
+  :submit
+  ([[_]]
+   (go
+     (as-> (@an-atm :words) X
+       (group-by (fn [[_k v]] (some #{:again :hard :good :easy} (keys v))) X)
+       (update-vals X (fn [v] (map first v)))
+       (dissoc X nil)
+       (<! (anki/raw-input-results X)))
+     (handle-effect [[:update-due-now]])
+     (handle-effect [[:clear-staging-area]]))))
 (defmethod handle-effect
   :clear-staging-area
   ([_]

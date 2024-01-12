@@ -22,17 +22,18 @@
     (d/span {:style {:margin "4px"} :on-click #(dispatch [:unstage-card])} s)))
 
 (defnc staging-area [{:keys [dispatch]}]
-  (let [[s] (connect-atom an-atm [:pending-input])
-        [hard] (ca [:words]
-                 (comp
-                   keys
-                   (partial into {} (filter (fn [[_ v]] (:hard v))))) )]
+  (let
+    [[[again] [hard] [good] [easy]]
+     (for [i [:again :hard :good :easy]]
+       (ca [:words]
+           (comp
+             keys
+             (partial into {} (filter (fn [[_ v]] (i v)))))))]
     (<>
-      (d/div (str hard))
       (d/h3 "Staging area")
       (d/div
         {:style {:display "flex" :margin "30px" :gap "15px"}}
-        (for [[k v] s]
+        (for [[k v] {:again again :hard hard :good good :easy easy}]
           (d/div {:key k}
                  (d/span {:style {}} (d/h5 (name k)))
                  (for [w v]
@@ -51,8 +52,7 @@
                 "Clear"))))
 
 (defnc word-you-can-stage [{:keys [dispatch id word]}]
-  (let [[s] (connect-atom an-atm [:pending-input])
-
+  (let [[s s-s] (ca [:words id])
         attempt->color
         {:again "red" :hard "yellow" :good "green" :easy "blue"}
 
@@ -64,7 +64,7 @@
               :background-color (x attempt->color)}
              :on-click
              #(dispatch [:stage-card x])}
-            (if ((x s) id) " ⋅  " "    ")))]
+            (if (x s) " ⋅  " "    ")))]
     (d/div
       {:style
        {:font-size "3rem"
