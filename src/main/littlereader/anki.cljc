@@ -13,16 +13,6 @@
      :version 6
      :params params}))
 
-(go
-  (println (<!
-             (http/post
-               "http://localhost:8765"
-               {:channel (chan 1 (comp (map :body) (map (some-fn :result :error))))
-                :with-credentials? false
-                :json-params {:action "version"
-                              :version 6}}))))
-
-
 #?(:clj
    (defn act [action params]
      (async/thread
