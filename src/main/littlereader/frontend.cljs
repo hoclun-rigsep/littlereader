@@ -110,6 +110,13 @@
         "Show")
       (d/span {:style {:display (if show-state "block" "none")}} (str state)))))
 
+(defnc word-adder [{:keys [dispatch]}]
+  (let [[s s-s] (hooks/use-state "")]
+    (<>
+      (d/input {:value s
+                :on-change #(s-s (.. % -target -value))})
+      (d/button {:on-click #(dispatch [[:add-word] s])} "Add"))))
+
 (defnc app []
   (helix.hooks/use-effect :once
                           (handle-effect [[:update-due-now]])
@@ -118,6 +125,7 @@
     {}
     (d/button {:on-click #(handle-effect [[:synchronize]])
                :class ["btn" "btn-primary"]} "Synchronize")
+    ($ word-adder {:dispatch (dispatch-prop handle-effect)})
     ($ state-view)
     (d/br)
     ($ staging-area {:dispatch (dispatch-prop handle-effect)})

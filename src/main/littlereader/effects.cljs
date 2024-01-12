@@ -70,3 +70,9 @@
   :but-click ([[[typ path] arg1]] (println typ path arg1)))
 (defmethod handle-effect
   :inc-state ([[[_ path]]] (swap! an-atm update-in path inc)))
+(defmethod handle-effect
+  :add-word
+  ([[[typ path] word]]
+   (go
+     (let [id (first (<! (anki/words->cards [word])))]
+       (swap! an-atm update-in [:words id] (fnil #(conj % {}) {}))))))
