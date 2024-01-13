@@ -63,7 +63,7 @@
              {:cursor "pointer" :width "3rem"
               :background-color (x attempt->color)}
              :on-click
-             #(dispatch [:stage-card x])}
+             #(dispatch [(if (x s) :unstage-card :stage-card) x])}
             (if (x s) " ⋅  " "    ")))]
     (d/div
       {:style
