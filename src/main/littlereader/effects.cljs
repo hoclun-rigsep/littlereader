@@ -2,8 +2,20 @@
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
     [cljs.core.async :refer [chan take! <! timeout] :as async]
+    [medley.core :refer [deep-merge]]
+    [cljs-http.client :as http]
     [littlereader.state :refer [an-atm]]
     [littlereader.anki :as anki]))
+
+(defn backend [effect]
+  (go
+    (swap!
+      an-atm
+      deep-merge
+      (do (<! (http/post
+            "handle-effect"
+            {:with-credentials? false}))
+          {}))))
 
 (defmulti handle-effect (comp first first))
 

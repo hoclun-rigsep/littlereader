@@ -17,7 +17,7 @@
     ,))
 
 (defn my-handler [sys req]
-  nil)
+  (response {}))
 
 (defn handler-with-middleware [sys]
   (-> (partial #'my-handler sys)
