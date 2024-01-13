@@ -43,13 +43,13 @@
                               :word w
                               :dispatch
                               (dispatch-prop dispatch :pending-input k w)}))))))
-      (d/button
-        {:class "btn btn-primary"
-         :on-click #(handle-effect [[:submit]])}
-        "Submit")
-      (d/button {:class "btn btn-secondary"
-                 :on-click #(handle-effect [[:clear-staging-area]])}
-                "Clear"))))
+      (d/div {:style {:display "flex" :gap "10px"}}
+             (d/button {:class "btn btn-primary"
+                        :on-click #(handle-effect [[:submit]])}
+                       "Submit")
+             (d/button {:class "btn btn-secondary"
+                        :on-click #(handle-effect [[:clear-staging-area]])}
+                       "Clear")))))
 
 (defnc word-you-can-stage [{:keys [dispatch id word]}]
   (let [[s s-s] (ca [:words id])
@@ -94,11 +94,12 @@
     (d/div
       h
       (d/span (count word-ids))
-      (d/div {:style {:display "flex" :flex-wrap "wrap"}}
-             (for [[id wrd] (sort-by second state)]
-               ($ word-you-can-stage
-                  {:id id :word wrd :key id
-                   :dispatch (dispatch-prop dispatch id)}))))))
+      (when (seq word-ids)
+        (d/div {:style {:display "flex" :flex-wrap "wrap"}}
+               (for [[id wrd] (sort-by second state)]
+                 ($ word-you-can-stage
+                    {:id id :word wrd :key id
+                     :dispatch (dispatch-prop dispatch id)})))))))
 
 (defnc state-view []
   (let [[state] (connect-atom an-atm)
@@ -115,7 +116,9 @@
     (<>
       (d/input {:value s
                 :on-change #(s-s (.. % -target -value))})
-      (d/button {:on-click #(dispatch [[:add-word] s])} "Add"))))
+      (d/button {:class ["btn" "btn-sm" "btn-secondary"]
+                 :on-click #(dispatch [[:add-word] s])}
+                "Add"))))
 
 (defnc app []
   (helix.hooks/use-effect :once
@@ -123,26 +126,39 @@
                           (handle-effect [[:update-due-by-tomorrow]]))
   (d/div
     {}
-    (d/button {:on-click #(handle-effect [[:bring-in-random]])
-               :class ["btn" "btn-primary"]} "Bring in random")
-    (d/button {:on-click #(handle-effect [[:synchronize]])
-               :class ["btn" "btn-primary"]} "Synchronize")
-    ($ word-adder {:dispatch (dispatch-prop handle-effect)})
-    ($ state-view)
+    (d/div {:style {:display "flex" :gap "10px"}}
+           (d/button {:on-click #(handle-effect [[:bring-in-random]])
+                      :class ["btn" "btn-primary"]} "Bring in random")
+           (d/button {:on-click #(handle-effect [[:synchronize]])
+                      :class ["btn" "btn-primary"]} "Synchronize")
+           ($ word-adder {:dispatch (dispatch-prop handle-effect)})
+           ($ state-view))
     (d/br)
     ($ staging-area {:dispatch (dispatch-prop handle-effect)})
     (d/br)
     ($ words
-       {:h (d/h3 "Due now!")
+       {:h (d/h3 "Some words not due")
         :dispatch (dispatch-prop handle-effect)
         :word-ids-hook
         (c-a an-atm [:words]
-             (comp keys (partial into {} (filter (fn [[_ v]] (:due-now v))))))})
+             (comp
+               keys
+               (partial into {} (remove (fn [[_ v]] (:due-by-tomorrow v))))))})
+    #_($ words
+         {:h (d/h3 "Due now!")
+          :dispatch (dispatch-prop handle-effect)
+          :word-ids-hook
+          (c-a an-atm [:words]
+               (comp
+                 keys
+                 (partial into {} (filter (fn [[_ v]] (:due-now v))))))})
     ($ words
        {:h (d/h3 "Due by tomorrow")
         :word-ids-hook
         (c-a an-atm [:words]
-             (comp keys (partial into {} (filter (fn [[_ v]] (:due-now v))))))
+             (comp
+               keys
+               (partial into {} (filter (fn [[_ v]] (:due-by-tomorrow v))))))
         :dispatch (dispatch-prop handle-effect)})))
 
 (defonce root (rdom/createRoot (js/document.getElementById "app")))
