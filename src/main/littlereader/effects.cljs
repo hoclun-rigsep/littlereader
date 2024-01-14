@@ -12,10 +12,12 @@
     (swap!
       an-atm
       deep-merge
-      (do (<! (http/post
-            "handle-effect"
-            {:with-credentials? false}))
-          {}))))
+      (:body
+        (<! (http/post
+              "http://localhost:8000/intent"
+              {:as :auto
+               :edn-params
+               effect}))))))
 
 (defmulti handle-effect (comp first first))
 

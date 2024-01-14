@@ -7,38 +7,51 @@
 
 (def attempt {:again 1 :hard 2 :good 3 :easy 4 1 1 2 2 3 3 4 4})
 
-#_(defn act [action params]
-  (merge 
-    {:action (name action)
-     :version 6
-     :params params}))
+(comment
+  ; clj
+  (:body (http/get "http://localhost:8000" {:accept :edn :as :auto}))
+
+  ;cljs
+  (go
+    (println 
+      (:body (<! (http/post
+            "http://localhost:8000/intent"
+            {:as :auto
+             :edn-params
+             [[:test]]}))))))
 
 #?(:clj
-   (defn act [action params]
-     (async/thread
-       ((some-fn :result :error)
-        (:body
-          (http/post
-            "http://localhost:8765"
-            {:content-type :json
-             :as :auto
-             :form-params
-             (merge
-               {:action (name action)
-                :version 6}
-               (when params
-                 {:params params}))})))))
+   (defn act
+     ([action] (act action nil))
+     ([action params]
+      (async/thread
+        ((some-fn :result :error)
+         (:body
+           (http/post
+             "http://localhost:8765"
+             {:content-type :json
+              :as :auto
+              :form-params
+              (merge
+                {:action (name action)
+                 :version 6}
+                (when params
+                  {:params params}))}))))))
    :cljs
-   (defn act [action params]
-     (http/post
-       "http://localhost:8765"
-       {:channel (chan 1 (comp (map :body) (map (some-fn :result :error))))
-        :with-credentials? false
-        :json-params (merge {:action (name action)
-                             :version 6}
-                            (when params {:params params}))})))
+   (defn act
+     ([action] (act action nil))
+     ([action params]
+      (http/post
+        "http://localhost:8765"
+        {:channel (chan 1 (comp (map :body) (map (some-fn :result :error))))
+         :with-credentials? false
+         :json-params (merge {:action (name action)
+                              :version 6}
+                             (when params {:params params}))}))))
 
-(defn synchronize [] (act :sync nil))
+(defn running? [] (act :version))
+
+(defn synchronize [] (act :sync))
 
 (def a-card 1700182610095)
 

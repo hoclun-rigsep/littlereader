@@ -13,4 +13,4 @@
 
 ;; this is called before any code is reloaded
 (defn ^:dev/before-load stop []
-  (js/console.log "stop"))
+  #_(js/console.log "stop"))

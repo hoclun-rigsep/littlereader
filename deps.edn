@@ -8,7 +8,8 @@
         ; ring-request-proxy/ring-request-proxy {:mvn/version "0.1.11"}
         clj-http/clj-http {:mvn/version "3.12.3"}
         cheshire/cheshire {:mvn/version "5.12.0"}
-        ; metosin/muuntaja {:mvn/version "0.6.8"}
+        jumblerg/ring-cors {:mvn/version "3.0.0"}
+        metosin/muuntaja {:mvn/version "0.6.8"}
         ,}
  :aliases
  {:repl/rebel
