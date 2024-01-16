@@ -35,11 +35,16 @@
        (swap!
          an-atm
          (fn [atm]
-           (assoc atm :words
-                  (reduce
-                    (fn [val item] (assoc-in val [item :due-by-tomorrow] true))
-                    (-> atm :words)
-                    x))))))))
+           (assoc
+             atm :words
+             (into
+               (into {} (map #(hash-map % {})) x)
+               (map
+                 (fn [[k v]]
+                   [k (if ((set x) k)
+                        (assoc v :due-by-tomorrow true)
+                        (dissoc v :due-by-tomorrow))]))
+               (:words atm)))))))))
 (defmethod handle-effect
   :update-due-now
   ([_]
