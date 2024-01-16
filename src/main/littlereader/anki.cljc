@@ -5,6 +5,9 @@
             #?(:cljs [cljs.core.async :refer [chan <!] :as async]
                :clj  [clojure.core.async :refer [chan go <!] :as async])))
 
+
+(goog-define url "http://localhost:8000/anki")
+
 (def attempt {:again 1 :hard 2 :good 3 :easy 4 1 1 2 2 3 3 4 4})
 
 (comment
@@ -42,7 +45,7 @@
      ([action] (act action nil))
      ([action params]
       (http/post
-        "http://localhost:8765"
+        url ; "anki" "http://localhost:8765"
         {:channel (chan 1 (comp (map :body) (map (some-fn :result :error))))
          :with-credentials? false
          :json-params (merge {:action (name action)

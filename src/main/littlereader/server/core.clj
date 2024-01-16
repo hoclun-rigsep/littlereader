@@ -27,15 +27,26 @@
 (defmulti handle-effect (comp first first))
 (defmethod handle-effect :test ([& _] {:reatrd 6}))
 
-(defmulti my-handler #(string/split (:uri %2) #"/"))
+(defmulti ring-handler #(string/split (apply str (rest (:uri %2))) #"/"))
 
-(defmethod my-handler [] ([sys req] (response "Hellllllo")))
-(defmethod my-handler
-  ["" "intent"]
+(defmethod ring-handler [""] ([_sys req] (response "Hellllllo")))
+
+(defmethod ring-handler ["anki"]
+  ([_sys req]
+   (let [url "http://localhost:8765"]
+     (client/post
+       url
+       {:content-type :json
+        :as :stream
+        :form-params
+        (:body-params req)}))))
+
+(defmethod ring-handler
+  ["intent"]
   ([_sys req] (response (handle-effect (:body-params req)))))
 
 (defn handler-with-middleware [sys]
-  (-> (partial #'my-handler sys)
+  (-> (partial #'ring-handler sys)
       (middleware/wrap-format)
       (ring.middleware.stacktrace/wrap-stacktrace)
       (wrap-cors identity)
