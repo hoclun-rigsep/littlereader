@@ -16,7 +16,13 @@
     [jumblerg.middleware.cors :refer [wrap-cors]]
     [muuntaja.core :as m]
     [muuntaja.middleware :as middleware]
+    [shadow.cljs.devtools.api :as api]
+    [shadow.cljs.devtools.server :as server]
     ,))
+
+(defn shadow-watch [& _]
+  (server/start!)
+  (api/watch :app))
 
 (defmulti handle-effect (comp first first))
 (defmethod handle-effect :test ([& _] {:reatrd 6}))
