@@ -1,4 +1,4 @@
-{:paths ["src/main"]
+{:paths ["src/main" "resources"]
  :deps {org.clojure/clojure {:mvn/version "1.11.1"}
         org.clojure/core.async {:mvn/version "1.6.681"}
         dev.weavejester/medley {:mvn/version "1.7.0"}
@@ -12,7 +12,10 @@
         metosin/muuntaja {:mvn/version "0.6.8"}
         ,}
  :aliases
- {:repl/rebel
+ {:server
+  {:main-opts
+   ["-m" "littlereader.server.core"]}
+  :repl/rebel
   {:extra-deps  {nrepl/nrepl                {:mvn/version  "1.0.0"}
                  cider/cider-nrepl          {:mvn/version  "0.30.0"}
                  com.bhauman/rebel-readline  {:mvn/version  "0.1.4"}}

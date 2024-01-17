@@ -16,13 +16,10 @@
     [jumblerg.middleware.cors :refer [wrap-cors]]
     [muuntaja.core :as m]
     [muuntaja.middleware :as middleware]
-    [shadow.cljs.devtools.api :as api]
-    [shadow.cljs.devtools.server :as server]
     ,))
+; shadow.cljs.devtools.api/repl 
+; shadow.cljs.devtools.server/start!
 
-(defn shadow-watch [& _]
-  (server/start!)
-  (api/watch :app))
 
 (defmulti handle-effect (comp first first))
 (defmethod handle-effect :test ([& _] {:reatrd 6}))
@@ -48,6 +45,7 @@
 (defn handler-with-middleware [sys]
   (-> (partial #'ring-handler sys)
       (middleware/wrap-format)
+      (ring.middleware.resource/wrap-resource "public")
       (ring.middleware.stacktrace/wrap-stacktrace)
       (wrap-cors identity)
       ; (ring.middleware.resource/wrap-resource "")
@@ -61,11 +59,13 @@
 (defn run-server
   ([sys] (run-server sys "8080"))
   ([sys & args]
+   (let [port (Integer. (first args))]
+   (println "Starting server on port " port)
    (run-jetty
      (fn [req]
        ((#'handler-with-middleware sys) req))
      {:join? true
-      :port (Integer. (first args))})))
+      :port port}))))
 
 ;; need a way to make sure this gets shut down i guess
 (def system nil)
