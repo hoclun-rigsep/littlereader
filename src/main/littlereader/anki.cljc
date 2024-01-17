@@ -6,7 +6,8 @@
                :clj  [clojure.core.async :refer [chan go <!] :as async])))
 
 
-(goog-define url "http://localhost:8000/anki")
+#?(:cljs
+   (goog-define url "http://localhost:8000/anki"))
 
 (def attempt {:again 1 :hard 2 :good 3 :easy 4 1 1 2 2 3 3 4 4})
 
