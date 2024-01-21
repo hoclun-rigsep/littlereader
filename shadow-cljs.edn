@@ -15,4 +15,4 @@
                          :entries [littlereader.core]}}
         :dev
         {:closure-defines
-         {littlereader.anki/url "http://localhost:8000/anki"}}}}}
+         {littlereader.anki/url "anki"}}}}}
