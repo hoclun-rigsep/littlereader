@@ -90,7 +90,8 @@
      [state set-state] (helix.hooks/use-state #{})]
     (helix.hooks/use-effect
       [word-ids]
-      (go (set-state (<! (anki/cards->words' word-ids)))))
+      (when (seq word-ids)
+        (go (set-state (<! (anki/cards->words' word-ids))))))
     (d/div
       h
       (d/span (count word-ids))

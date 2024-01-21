@@ -73,12 +73,14 @@
        {"cards" cards}))
 
 (defn cards->words' [cards]
+  (if-not (seq cards) (throw js/Error.))
   (go
     (into {}
           (map #(vector (get % :cardId) (get-in % [:fields :Front :value])))
           (<! (act :cardsInfo {:cards cards})))))
 
 (defn cards->words [cards]
+  (if-not (seq cards) (throw js/Error.))
   (go
     (into #{}
           (map #(get-in % [:fields :Front :value]))

@@ -75,6 +75,7 @@
        (dissoc X nil)
        (<! (anki/raw-input-results X)))
      (handle-effect [[:update-due-now]])
+     (handle-effect [[:update-due-by-tomorrow]])
      (handle-effect [[:clear-staging-area]]))))
 (defmethod handle-effect
   :clear-staging-area
