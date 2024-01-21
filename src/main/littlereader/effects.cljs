@@ -30,15 +30,16 @@
 (defmethod handle-effect
   :update-due-by-tomorrow
   ([_]
-   (go
-     (let [x (<! (anki/due-by-tomorrow))]
+   (take!
+     (anki/due-by-tomorrow)
+     (fn [x]
        (swap!
          an-atm
          (fn [atm]
            (assoc
              atm :words
              (into
-               (into {} (map #(hash-map % {})) x)
+               (into {} (map #(hash-map % {:due-by-tomorrow true})) x)
                (map
                  (fn [[k v]]
                    [k (if ((set x) k)
@@ -48,15 +49,22 @@
 (defmethod handle-effect
   :update-due-now
   ([_]
-   (go
-     (let [x (<! (anki/due-now))]
-       (swap! an-atm
-              (fn [atm]
-                (assoc atm :words
-                       (reduce
-                         (fn [val item] (assoc-in val [item :due-now] true))
-                         (-> atm :words)
-                         x))))))))
+   (take!
+     (anki/due-now)
+     (fn [x]
+       (swap!
+         an-atm
+         (fn [atm]
+           (assoc
+             atm :words
+             (into
+               (into {} (map #(hash-map % {:due-now true})) x)
+               (map
+                 (fn [[k v]]
+                   [k (if ((set x) k)
+                        (assoc v :due-now true)
+                        (dissoc v :due-now))]))
+               (:words atm)))))))))
 (defmethod handle-effect
   :submit
   ([[_]]
