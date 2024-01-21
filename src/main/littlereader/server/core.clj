@@ -26,7 +26,6 @@
 
 (defmulti ring-handler #(string/split (apply str (rest (:uri %2))) #"/"))
 
-(defmethod ring-handler [""] ([_sys req] (response "Hellllllo")))
 
 (defmethod ring-handler ["anki"]
   ([_sys req]
@@ -55,6 +54,10 @@
       ; (middleware/wrap-format-response)
       ; (middleware/wrap-format-negotiate)
       ,))
+
+(defmethod ring-handler
+  [""]
+  ([sys req] ((handler-with-middleware sys) (assoc req :uri "/index.html"))))
 
 (defn run-server
   ([sys] (run-server sys "8080"))
