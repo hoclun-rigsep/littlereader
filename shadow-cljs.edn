@@ -5,7 +5,7 @@
   "src/test"]
  :deps true
  :nrepl {:write-port-file true}
- :dev-http {8080 "public"}
+ :dev-http {8080 "resources/public"}
 
  :builds
  {:app {:target :browser
