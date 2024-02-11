@@ -9,6 +9,7 @@
     [littlereader.effects :refer [handle-effect]]
     [littlereader.state :refer [an-atm]]
     [littlereader.anki :as anki]
+    [littlereader.lemmas :refer [lemmas]]
     [littlereader.ui-frame :refer [dispatch-prop
                                    ; effect-dispatcher
                                    connect-atom
@@ -113,10 +114,13 @@
       (d/span {:style {:display (if show-state "block" "none")}} (str state)))))
 
 (defnc word-adder [{:keys [dispatch]}]
-  (let [[s s-s] (hooks/use-state "")]
+  (let [[s s-s] (hooks/use-state "")
+        [w _] (connect-chan
+                (go (<! (anki/cards->words (<! (anki/findCards "is:new"))))))]
     (<>
-      (d/input {:value s
-                :on-change #(s-s (.. % -target -value))})
+      (d/select {:value s
+                 :on-change #(s-s (.. % -target -value))}
+                (for [i lemmas :when ((set w) i)] (d/option {:key i} i)))
       (d/button {:class ["btn" "btn-sm" "btn-secondary"]
                  :on-click #(dispatch [[:add-word] s])}
                 "Add"))))
