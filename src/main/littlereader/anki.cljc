@@ -47,7 +47,10 @@
      ([action params]
       (http/post
         url ; "anki" "http://localhost:8765"
-        {:channel (chan 1 (comp (map :body) (map (some-fn :result :error))))
+        {:channel (chan 1
+                        (comp
+                          (map :body)
+                          (map (some-fn :result :error (constantly nil)))))
          :with-credentials? false
          :json-params (merge {:action (name action)
                               :version 6}
