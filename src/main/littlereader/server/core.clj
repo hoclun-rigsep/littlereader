@@ -17,9 +17,13 @@
     [muuntaja.core :as m]
     [muuntaja.middleware :as middleware]
     ,))
-; shadow.cljs.devtools.api/repl 
-; shadow.cljs.devtools.server/start!
 
+(comment
+  (do
+    (require '[shadow.cljs.devtools.server])
+    (require '[shadow.cljs.devtools.api])
+    (shadow.cljs.devtools.server/start!)
+    (shadow.cljs.devtools.api/watch :app)))
 
 (defmulti handle-effect (comp first first))
 (defmethod handle-effect :test ([& _] {:reatrd 6}))
