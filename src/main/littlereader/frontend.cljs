@@ -116,7 +116,9 @@
 (defnc word-adder [{:keys [dispatch]}]
   (let [[s s-s] (hooks/use-state "")
         [w _] (connect-chan
-                (go (<! (anki/cards->words (<! (anki/findCards "is:new"))))))]
+                (go
+                  (let [wrds (<! (anki/findCards "is:suspended"))]
+                    (<! (anki/cards->words wrds)))))]
     (<>
       (d/select {:value s
                  :on-change #(s-s (.. % -target -value))}
