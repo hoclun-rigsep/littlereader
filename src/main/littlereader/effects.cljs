@@ -103,7 +103,12 @@
   ([[[typ path] word]]
    (go
      (let [id (first (<! (anki/words->cards [word])))]
+       (handle-effect [[:unsuspend-word] id])
        (swap! an-atm update-in [:words id] (fnil #(conj % {}) {}))))))
+(defmethod handle-effect
+  :unsuspend-word
+  ([[[typ path] id]]
+   (anki/unsuspend [id])))
 (defmethod handle-effect
   :bring-in-random
   ([]

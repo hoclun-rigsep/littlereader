@@ -125,6 +125,10 @@
        {:cards cards
         :easeFactors (repeat (count cards) ease-permille)}))
 
+(defn unsuspend [cards]
+  {:pre (seq cards)}
+  (act :unsuspend {:cards cards}))
+
 (defn bring-in-random-new-card
   ([] (bring-in-random-new-card nil))
   ([word]
