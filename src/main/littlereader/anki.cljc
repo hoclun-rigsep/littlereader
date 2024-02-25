@@ -7,7 +7,9 @@
 
 
 #?(:cljs
-   (goog-define url "http://localhost:8000/anki"))
+   (goog-define url "anki")
+   :clj
+   (def url "http://localhost:8765"))
 
 (def attempt {:again 1 :hard 2 :good 3 :easy 4 1 1 2 2 3 3 4 4})
 
@@ -32,7 +34,7 @@
         ((some-fn :result :error)
          (:body
            (http/post
-             "http://localhost:8765"
+             url
              {:content-type :json
               :as :auto
               :form-params
@@ -46,7 +48,7 @@
      ([action] (act action nil))
      ([action params]
       (http/post
-        url ; "anki" "http://localhost:8765"
+        url
         {:channel (chan 1
                         (comp
                           (map :body)

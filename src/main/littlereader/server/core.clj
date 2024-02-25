@@ -23,7 +23,12 @@
     (require '[shadow.cljs.devtools.server])
     (require '[shadow.cljs.devtools.api])
     (shadow.cljs.devtools.server/start!)
-    (shadow.cljs.devtools.api/watch :app)))
+    (let [url "http://localhost:8765"]
+      (shadow.cljs.devtools.api/watch
+        :app
+        {:config-merge
+         [{:closure-defines
+           {'littlereader.anki/url url}}]}))))
 
 (defmulti handle-effect (comp first first))
 (defmethod handle-effect :test ([& _] {:reatrd 6}))
