@@ -50,27 +50,26 @@
                         :on-click #(handle-effect [[:clear-staging-area]])}
                        "Clear")))))
 
-(defnc word-you-can-stage [{:keys [dispatch id word]}]
-  (let [[s s-s] (ca [:words id])
+(defnc word-you-can-stage [{:keys [dispatch id word style]}]
+  (let [[s _s-s] (ca [:words id])
+        style (or style {:font-size "3rem"
+                         :width "18rem"
+                         :background-color "#aaa"
+                         :margin "6px"
+                         :border-radius "35% 35% 0% 0%"})
         attempt->color
         {:again "red" :hard "yellow" :good "green" :easy "blue"}
-
         little-button
         (fn [x]
           (d/span
             {:style
-             {:cursor "pointer" :width "3rem"
+             {:cursor "pointer" :width "15%"
               :background-color (x attempt->color)}
              :on-click
              #(dispatch [(if (x s) :unstage-card :stage-card) x])}
             (if (x s) " ⋅  " "    ")))]
     (d/div
-      {:style
-       {:font-size "3rem"
-        :width "18rem"
-        :background-color "#aaa"
-        :margin "6px"
-        :border-radius "35% 35% 0% 0%"}}
+      {:style style}
       (d/div
         {:style
          {:width "%100" :text-align "center"}}
@@ -82,6 +81,35 @@
         (little-button :hard)
         (little-button :good)
         (little-button :easy)))))
+
+;; random fonts would be good
+(defnc word-at-a-time [{:keys [dispatch word-ids-hook]}]
+  (let [[word-ids _] word-ids-hook
+        [state set-state] (helix.hooks/use-state #{})
+        [current set-current] (helix.hooks/use-state 0) 
+        [id wrd] (get (vec state) current)]
+    (helix.hooks/use-effect
+      [word-ids]
+      (when (seq word-ids)
+        (go (set-state (<! (anki/cards->words' word-ids))))))
+    (d/div
+      ($ word-you-can-stage
+         {:id id :word wrd
+          :style {:width "100%"
+                  :margin "1rem"
+                  :padding "1rem"
+                  :font-size "20rem"
+                  :background-color "#aaa"
+                  :border-radius "35% 35% 0% 0%"}
+          :dispatch (fn [& args]
+                      (set-current #(min (inc current) (dec (count state))))
+                      (apply (dispatch-prop dispatch id) args))})
+      (d/button
+        {:on-click #(set-current (max 0 (dec current)))}
+        \←)
+      (d/button
+        {:on-click #(set-current (min (inc current) (dec (count state))))}
+        \→))))
 
 (defnc words [{:keys [dispatch word-ids-hook h]}]
   (let
@@ -132,6 +160,8 @@
   (d/div
     {}
     (d/div {:style {:display "flex" :gap "10px"}}
+           
+           (d/br)
            (d/button {:on-click #(handle-effect [[:bring-in-random]])
                       :class ["btn" "btn-primary"]} "Bring in random")
            (d/button {:on-click #(handle-effect [[:synchronize]])
