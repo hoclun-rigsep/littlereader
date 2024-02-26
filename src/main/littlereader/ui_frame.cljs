@@ -66,7 +66,8 @@
          #(do (put! cleanup? true)))) ;; couldn't this just close the 
      [state set-state])))
 
-(defn dispatch-prop [dispatch & ids]
+(defn dispatch-prop
+  [dispatch & ids]
   (fn [x]
     (dispatch
       (if-not (seq ids) x

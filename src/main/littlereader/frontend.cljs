@@ -41,9 +41,7 @@
                    (d/div {:key w :style {:flex-direction "column"}}
                           ($ staging-area-word
                              {:id w
-                              :word w
-                              :dispatch
-                              (dispatch-prop dispatch :pending-input k w)}))))))
+                              :word w}))))))
       (d/div {:style {:display "flex" :gap "10px"}}
              (d/button {:class "btn btn-primary"
                         :on-click #(handle-effect [[:submit]])}
