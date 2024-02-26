@@ -85,6 +85,7 @@
 (defmethod handle-effect
   :stage-card
   ([[[_typ [id]] attempt]]
+   (swap! an-atm update-in [:words id] dissoc :again :hard :good :easy)
    (swap! an-atm update-in [:words id] conj [attempt true])
    #_(swap! an-atm update-in [:pending-input attempt] conj id)))
 (defmethod handle-effect
