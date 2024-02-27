@@ -60,7 +60,7 @@
                          :margin "6px"
                          :border-radius "35% 35% 0% 0%"})
         attempt->color
-        {:again "red" :hard "yellow" :good "green" :easy "blue"}
+        {:again "red" :hard "#EBE836" :good "green" :easy "blue"}
         little-button
         (fn [x]
           (d/span
@@ -91,26 +91,32 @@
         [current set-current] (helix.hooks/use-state 0) 
         [id wrd] (get (vec state) current)]
     (helix.hooks/use-effect
+      :once
+      (set-background-color "#ccc"))
+    (helix.hooks/use-effect
       [word-ids]
       (when (seq word-ids)
         (go (set-state (<! (anki/cards->words' word-ids))))))
     (d/div
+      {:style {:padding "3vw" :background-color "#ccc"}}
       ($ word-you-can-stage
          {:id id :word wrd
-          :style {:width "100%"
-                  :margin "1rem"
-                  :padding "1rem"
-                  :font-size "20rem"
-                  :background-color "#aaa"
-                  :border-radius "35% 35% 0% 0%"}
+          :style {:background-color "#ccc" :width "94vw" :font-size "calc(20vw)"}
           :dispatch (fn [& args]
                       (set-current #(min (inc current) (dec (count state))))
                       (apply (dispatch-prop dispatch id) args))})
+      (d/br)
       (d/button
-        {:on-click #(set-current (max 0 (dec current)))}
+        {:style {:width "20vw" :font-size "calc(8vw)"}
+         :on-click #(set-current (max 0 (dec current)))}
         \←)
       (d/button
-        {:on-click #(set-current (min (inc current) (dec (count state))))}
+        {:style {:width "20vw" :font-size "calc(8vw)"}
+         :on-click #(dispatch [[:change-active-view] :landing])}
+        \⨯)
+      (d/button
+        {:style {:width "20vw" :font-size "calc(8vw)"}
+         :on-click #(set-current (min (inc current) (dec (count state))))}
         \→))))
 
 (defnc words [{:keys [dispatch word-ids-hook h]}]
