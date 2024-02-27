@@ -17,6 +17,8 @@
                                    connect-chan]]))
 
 (def ca (partial c-a an-atm))
+(defn set-background-color [color]
+  (set! (.-backgroundColor (.-style (.-body js/document))) color))
 
 (defnc staging-area-word [{:keys [dispatch id]}]
   (let [[s] (connect-chan (anki/card->word id))]
