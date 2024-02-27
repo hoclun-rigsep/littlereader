@@ -156,47 +156,71 @@
                 "Add"))))
 
 (defnc app []
-  (helix.hooks/use-effect :once
-                          (handle-effect [[:update-due-now]])
-                          (handle-effect [[:update-due-by-tomorrow]]))
-  (d/div
-    {}
-    (d/div {:style {:display "flex" :gap "10px"}}
-           
-           (d/br)
-           (d/button {:on-click #(handle-effect [[:bring-in-random]])
-                      :class ["btn" "btn-primary"]} "Bring in random")
-           (d/button {:on-click #(handle-effect [[:synchronize]])
-                      :class ["btn" "btn-primary"]} "Synchronize")
-           ($ word-adder {:dispatch (dispatch-prop handle-effect)})
-           ($ state-view))
-    (d/br)
-    ($ staging-area {:dispatch (dispatch-prop handle-effect)})
-    (d/br)
-    ($ words
-       {:h (d/h3 "Some words not due")
-        :dispatch (dispatch-prop handle-effect)
-        :word-ids-hook
-        (c-a an-atm [:words]
-             (comp
-               keys
-               (partial into {} (remove (fn [[_ v]] (:due-by-tomorrow v))))))})
-    #_($ words
-         {:h (d/h3 "Due now!")
-          :dispatch (dispatch-prop handle-effect)
-          :word-ids-hook
-          (c-a an-atm [:words]
-               (comp
-                 keys
-                 (partial into {} (filter (fn [[_ v]] (:due-now v))))))})
-    ($ words
-       {:h (d/h3 "Due by tomorrow")
-        :word-ids-hook
-        (c-a an-atm [:words]
-             (comp
-               keys
-               (partial into {} (filter (fn [[_ v]] (:due-by-tomorrow v))))))
-        :dispatch (dispatch-prop handle-effect)})))
+  (let
+    [[active-view]
+     (ca [:active-view])
+
+     words-not-due-hook
+     (c-a an-atm [:words]
+          (comp
+            keys
+            (partial into {} (remove (fn [[_ v]] (:due-by-tomorrow v))))))
+
+     word-ids-hook
+     (c-a an-atm [:words]
+          (comp
+            keys
+            (partial into {} (filter (fn [[_ v]] (:due-by-tomorrow v))))))]
+    (helix.hooks/use-effect :once
+
+                            (handle-effect [[:update-due-now]])
+                            (handle-effect [[:update-due-by-tomorrow]]))
+    (helix.hooks/use-effect [active-view]
+                            (set-background-color "#fff"))
+    (case active-view
+      :slides
+      (d/div
+        {:style {:background-color "#ccc"}}
+        ($ word-at-a-time
+           {:dispatch
+            (dispatch-prop handle-effect)
+
+            :word-ids-hook word-ids-hook}))
+
+      :landing
+      (d/div
+        {}
+        (d/div
+          {:style {:display "flex" :gap "10px"}}
+          (d/br)
+          (d/button {:on-click #(handle-effect [[:change-active-view] :slides])} \▶)
+          (d/button {:on-click #(handle-effect [[:bring-in-random]])
+                     :class ["btn" "btn-primary"]} "Bring in random")
+          (d/button {:on-click #(handle-effect [[:synchronize]])
+                     :class ["btn" "btn-primary"]} "Synchronize")
+          ($ word-adder {:dispatch (dispatch-prop handle-effect)})
+          ($ state-view))
+        (d/br)
+        ($ staging-area {:dispatch (dispatch-prop handle-effect)})
+        (d/br)
+        ($ words
+           {:h (d/h3 "Some words not due")
+            :dispatch (dispatch-prop handle-effect)
+            :word-ids-hook words-not-due-hook})
+        #_($ words
+             {:h (d/h3 "Due now!")
+              :dispatch (dispatch-prop handle-effect)
+              :word-ids-hook
+              (c-a an-atm [:words]
+                   (comp
+                     keys
+                     (partial into {} (filter (fn [[_ v]] (:due-now v))))))})
+        ($ words
+           {:h (d/h3 "Due by tomorrow")
+            :word-ids-hook word-ids-hook
+            :dispatch (dispatch-prop handle-effect)}))
+
+      (d/div (str active-view)))))
 
 (defonce root (rdom/createRoot (js/document.getElementById "app")))
 (.render root ($ app))

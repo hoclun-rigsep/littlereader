@@ -22,6 +22,10 @@
 (defmulti handle-effect (comp first first))
 
 (defmethod handle-effect
+  :change-active-view
+  ([[[_typ path] x]]
+   (swap! an-atm assoc :active-view x)))
+(defmethod handle-effect
   :synchronize
   ([_]
    (anki/synchronize)

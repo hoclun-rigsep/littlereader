@@ -1,4 +1,4 @@
 (ns littlereader.state)
 
 (defonce an-atm
-  (atom {}))
+  (atom {:active-view :landing}))
