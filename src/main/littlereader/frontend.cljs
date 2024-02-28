@@ -96,7 +96,7 @@
       [word-ids]
       (when (seq word-ids)
         (set-background-color "#ccc")
-        (go (set-state (<! (anki/cards->words' word-ids))))))
+        (go (set-state (shuffle (<! (anki/cards->words' word-ids)))))))
     (d/div
       {:style {:padding "3vw" :background-color "#ccc"}}
       ($ word-you-can-stage
