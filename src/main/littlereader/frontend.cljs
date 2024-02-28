@@ -33,24 +33,23 @@
              keys
              (partial into {} (filter (fn [[_ v]] (i v)))))))]
     (<>
-      (d/h3 "Staging area")
+      (d/h3 {:style {:display "inline-block"}} "Staging area")
+      (d/button {:class "btn btn-primary btn-sm mx-2"
+                 :on-click #(handle-effect [[:submit]])}
+                "Submit")
+      (d/button {:class "btn btn-secondary btn-sm"
+                 :on-click #(handle-effect [[:clear-staging-area]])}
+                "Clear")
       (d/div
-        {:style {:display "flex" :margin "30px" :gap "15px"}}
+        {:style {:display "flex" :margin-top "1rem" :margin-left "1rem" :gap "15px"}}
         (for [[k v] {:again again :hard hard :good good :easy easy}]
           (d/div {:key k}
-                 (d/span {:style {}} (d/h5 (name k)))
+                 (d/span {:style {}} (d/h6 (name k)))
                  (for [w v]
                    (d/div {:key w :style {:flex-direction "column"}}
                           ($ staging-area-word
                              {:id w
-                              :word w}))))))
-      (d/div {:style {:display "flex" :gap "10px"}}
-             (d/button {:class "btn btn-primary"
-                        :on-click #(handle-effect [[:submit]])}
-                       "Submit")
-             (d/button {:class "btn btn-secondary"
-                        :on-click #(handle-effect [[:clear-staging-area]])}
-                       "Clear")))))
+                              :word w})))))))))
 
 (defnc word-you-can-stage [{:keys [dispatch id word style]}]
   (let [[s _s-s] (ca [:words id])
@@ -90,12 +89,13 @@
         [state set-state] (helix.hooks/use-state #{})
         [current set-current] (helix.hooks/use-state 0) 
         [id wrd] (get (vec state) current)]
-    (helix.hooks/use-effect
-      :once
+    #_(helix.hooks/use-effect
+      []
       (set-background-color "#ccc"))
     (helix.hooks/use-effect
       [word-ids]
       (when (seq word-ids)
+        (set-background-color "#ccc")
         (go (set-state (<! (anki/cards->words' word-ids))))))
     (d/div
       {:style {:padding "3vw" :background-color "#ccc"}}
@@ -127,15 +127,18 @@
       [word-ids]
       (when (seq word-ids)
         (go (set-state (<! (anki/cards->words' word-ids))))))
-    (d/div
-      h
-      (d/span (count word-ids))
-      (when (seq word-ids)
-        (d/div {:style {:display "flex" :flex-wrap "wrap"}}
-               (for [[id wrd] (sort-by second state)]
-                 ($ word-you-can-stage
-                    {:id id :word wrd :key id
-                     :dispatch (dispatch-prop dispatch id)})))))))
+    (when (seq word-ids)
+      (d/div
+        h
+        #_(d/span (count word-ids))
+        (d/div
+          {:style {:display "flex"
+                   :flex-wrap "wrap"
+                   :justify-content "space-evenly"}}
+          (for [[id wrd] (sort-by second state)]
+            ($ word-you-can-stage
+               {:id id :word wrd :key id
+                :dispatch (dispatch-prop dispatch id)})))))))
 
 (defnc state-view []
   (let [[state] (connect-atom an-atm)
@@ -165,20 +168,17 @@
   (let
     [[active-view]
      (ca [:active-view])
-
      words-not-due-hook
      (c-a an-atm [:words]
           (comp
             keys
             (partial into {} (remove (fn [[_ v]] (:due-by-tomorrow v))))))
-
      word-ids-hook
      (c-a an-atm [:words]
           (comp
             keys
             (partial into {} (filter (fn [[_ v]] (:due-by-tomorrow v))))))]
     (helix.hooks/use-effect :once
-
                             (handle-effect [[:update-due-now]])
                             (handle-effect [[:update-due-by-tomorrow]]))
     (helix.hooks/use-effect [active-view]
@@ -190,22 +190,13 @@
         ($ word-at-a-time
            {:dispatch
             (dispatch-prop handle-effect)
-
             :word-ids-hook word-ids-hook}))
-
       :landing
       (d/div
         {}
-        (d/div
-          {:style {:display "flex" :gap "10px"}}
-          (d/br)
-          (d/button {:on-click #(handle-effect [[:change-active-view] :slides])} \▶)
-          (d/button {:on-click #(handle-effect [[:bring-in-random]])
-                     :class ["btn" "btn-primary"]} "Bring in random")
-          (d/button {:on-click #(handle-effect [[:synchronize]])
-                     :class ["btn" "btn-primary"]} "Synchronize")
-          ($ word-adder {:dispatch (dispatch-prop handle-effect)})
-          ($ state-view))
+        (d/div {:style {:float "right" :margin "2rem"}}
+          (d/button {:class  ["btn" "btn-lg" "btn-primary"]
+                     :on-click #(handle-effect [[:change-active-view] :slides])} \▶))
         (d/br)
         ($ staging-area {:dispatch (dispatch-prop handle-effect)})
         (d/br)
@@ -224,8 +215,14 @@
         ($ words
            {:h (d/h3 "Due by tomorrow")
             :word-ids-hook word-ids-hook
-            :dispatch (dispatch-prop handle-effect)}))
-
+            :dispatch (dispatch-prop handle-effect)})
+        (d/div {:style {:margin "2rem" :display "flex" :gap "10px"}}
+               (d/button {:on-click #(handle-effect [[:bring-in-random]])
+                          :class ["btn" "btn-primary"]} "Bring in random")
+               (d/button {:on-click #(handle-effect [[:synchronize]])
+                          :class ["btn" "btn-primary"]} "Synchronize")
+               ($ word-adder {:dispatch (dispatch-prop handle-effect)})
+               ($ state-view)))
       (d/div (str active-view)))))
 
 (defonce root (rdom/createRoot (js/document.getElementById "app")))
