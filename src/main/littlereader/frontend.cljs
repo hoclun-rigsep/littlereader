@@ -16,6 +16,7 @@
                                    c-a
                                    connect-chan]]))
 
+(def img-host-url "https://brooklyn.ambergers.name/littlereader-images")
 (def ca (partial c-a an-atm))
 (defn set-background-color [color]
   (set! (.-backgroundColor (.-style (.-body js/document))) color))
@@ -88,32 +89,49 @@
   (let [[word-ids _] word-ids-hook
         [state set-state] (helix.hooks/use-state #{})
         [current set-current] (helix.hooks/use-state 0) 
-        [id wrd] (get (vec state) current)]
+        [id wrd] (get (vec state) current)
+        [img? set-img?] (helix.hooks/use-state nil)
+        [show-img? set-show-img?] (helix.hooks/use-state nil)
+        advance (fn [] (set-current #(min (inc current) (dec (count state)))))]
     #_(helix.hooks/use-effect
-      []
-      (set-background-color "#ccc"))
+        []
+        (set-background-color "#ccc"))
     (helix.hooks/use-effect
       [word-ids]
       (when (seq word-ids)
         (set-background-color "#ccc")
         (go (set-state (shuffle (<! (anki/cards->words' word-ids)))))))
+    (helix.hooks/use-effect
+      [current] (set-img? nil) (set-show-img? nil))
     (d/div
       {:style {:padding "3vw" :background-color "#ccc"}}
+      (d/div {:style {:float "right" :margin "2rem"}}
+             (d/button {:class  ["btn" "btn-lg" "btn-primary"]
+                        :on-click #(dispatch [[:change-active-view] :landing])} \⨯))
+      ;; add delay before showing 
       ($ word-you-can-stage
          {:id id :word wrd
           :style {:background-color "#ccc" :width "94vw" :font-size "calc(20vw)"}
-          :dispatch (fn [& args]
-                      (set-current #(min (inc current) (dec (count state))))
-                      (apply (dispatch-prop dispatch id) args))})
+          :dispatch 
+          (fn [& args]
+            (let [[[_ x]] args]
+              (if (or (not img?) (#{:easy :good} x))
+                (advance)
+                (do (set-show-img? true)
+                    (js/setTimeout
+                      #(.scrollIntoView (aget (js/document.getElementsByTagName "img") 0))
+                      200)))
+              (apply (dispatch-prop dispatch id) args)))})
+      (when wrd
+        (d/img {:id "theimage" :style {:display (if show-img? "inherit" "none")}
+                :on-click advance
+                :on-load (fn [e] (println "img retrieved for" wrd) (set-img? e))
+                :src (str img-host-url wrd ".jpg")}))
       (d/br)
       (d/button
         {:style {:width "20vw" :font-size "calc(8vw)"}
          :on-click #(set-current (max 0 (dec current)))}
         \←)
-      (d/button
-        {:style {:width "20vw" :font-size "calc(8vw)"}
-         :on-click #(dispatch [[:change-active-view] :landing])}
-        \⨯)
       (d/button
         {:style {:width "20vw" :font-size "calc(8vw)"}
          :on-click #(set-current (min (inc current) (dec (count state))))}
