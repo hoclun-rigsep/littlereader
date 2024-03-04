@@ -14,7 +14,8 @@
                                    ; effect-dispatcher
                                    connect-atom
                                    c-a
-                                   connect-chan]]))
+                                   connect-chan
+                                   lockout-dispatch]]))
 
 (def img-host-url "https://brooklyn.ambergers.name/littlereader-images/")
 (def ca (partial c-a an-atm))
@@ -52,7 +53,7 @@
                              {:id w
                               :word w})))))))))
 
-(defnc word-you-can-stage [{:keys [dispatch id word style]}]
+(defnc word-you-can-stage [{:keys [dispatch id word style show-little-buttons]}]
   (let [[s _s-s] (ca [:words id])
         style (or style {:font-size "3rem"
                          :width "18rem"
@@ -77,23 +78,23 @@
         {:style
          {:width "%100" :text-align "center"}}
         word)
-      (d/div
-        {:style
-         {:display "flex" :justify-content "space-between" :line-height "50%"}}
-        (little-button :again)
-        (little-button :hard)
-        (little-button :good)
-        (little-button :easy)))))
+      (when-not (false? show-little-buttons)
+        (d/div
+          {:style
+           {:display "flex" :justify-content "space-around" :line-height "50%"}}
+          (little-button :again)
+          (little-button :hard)
+          (little-button :good)
+          (little-button :easy))))))
 
 ;; random fonts would be good
-(defnc word-at-a-time [{:keys [dispatch word-ids-hook]}]
+(defnc word-at-a-time [{:keys [dispatch word-ids-hook d d']}]
   (let [[word-ids _] word-ids-hook
         [state set-state] (helix.hooks/use-state #{})
-        [current set-current] (helix.hooks/use-state 0) 
+        [current set-current] (ca [:current])
         [id wrd] (get (vec state) current)
         [img? set-img?] (helix.hooks/use-state nil)
-        [show-img? set-show-img?] (helix.hooks/use-state nil)
-        advance (fn [] (set-current #(min (inc current) (dec (count state)))))]
+        [show-img? set-show-img?] (helix.hooks/use-state nil) ]
     #_(helix.hooks/use-effect
         []
         (set-background-color "#ccc"))
@@ -117,25 +118,25 @@
           (fn [& args]
             (let [[[_ x]] args]
               (if (or (not img?) (#{:easy :good} x))
-                (advance)
+                (d [[:advance] (count state)])
                 (do (set-show-img? true)
                     (js/setTimeout
                       #(.scrollIntoView (aget (js/document.getElementsByTagName "img") 0))
                       200)))
-              (apply (dispatch-prop dispatch id) args)))})
+              (apply (dispatch-prop d' id) args)))})
       (when wrd
         (d/img {:id "theimage" :style {:display (if show-img? "inherit" "none")}
-                :on-click advance
+                :on-click #(dispatch [[:advance] (count state)])
                 :on-load (fn [e] (println "img retrieved for" wrd) (set-img? e))
                 :src (str img-host-url wrd ".jpg")}))
       (d/br)
       (d/button
         {:style {:width "20vw" :font-size "calc(8vw)"}
-         :on-click #(set-current (max 0 (dec current)))}
+         :on-click #(dispatch [[:goback]])}
         \←)
       (d/button
         {:style {:width "20vw" :font-size "calc(8vw)"}
-         :on-click #(set-current (min (inc current) (dec (count state))))}
+         :on-click #(dispatch [[:advance] (count state)])}
         \→))))
 
 (defnc words [{:keys [dispatch word-ids-hook h]}]
@@ -202,47 +203,49 @@
                             (handle-effect [[:update-due-by-tomorrow]]))
     (helix.hooks/use-effect [active-view]
                             (set-background-color "#fff"))
+    
     (case active-view
-      :slides
-      (d/div
-        {:style {:background-color "#ccc"}}
-        ($ word-at-a-time
-           {:dispatch
-            (dispatch-prop handle-effect)
-            :word-ids-hook word-ids-hook}))
-      :landing
-      (d/div
-        {}
-        (d/div {:style {:float "right" :margin "2rem"}}
-          (d/button {:class  ["btn" "btn-lg" "btn-primary"]
-                     :on-click #(handle-effect [[:change-active-view] :slides])} \▶))
-        (d/br)
-        ($ staging-area {:dispatch (dispatch-prop handle-effect)})
-        (d/br)
-        ($ words
-           {:h (d/h3 "Some words not due")
-            :dispatch (dispatch-prop handle-effect)
-            :word-ids-hook words-not-due-hook})
-        #_($ words
-             {:h (d/h3 "Due now!")
+        :slides
+        (d/div
+          {:style {:background-color "#ccc"}}
+          ($ word-at-a-time
+             {:dispatch (dispatch-prop handle-effect)
+              :d (lockout-dispatch (dispatch-prop handle-effect))
+              :d' (lockout-dispatch (dispatch-prop handle-effect))
+              :word-ids-hook word-ids-hook}))
+        :landing
+        (d/div
+          {}
+          (d/div {:style {:float "right" :margin "2rem"}}
+                 (d/button {:class  ["btn" "btn-lg" "btn-primary"]
+                            :on-click #(handle-effect [[:change-active-view] :slides])} \▶))
+          (d/br)
+          ($ staging-area {:dispatch (dispatch-prop handle-effect)})
+          (d/br)
+          ($ words
+             {:h (d/h3 "Some words not due")
               :dispatch (dispatch-prop handle-effect)
-              :word-ids-hook
-              (c-a an-atm [:words]
-                   (comp
-                     keys
-                     (partial into {} (filter (fn [[_ v]] (:due-now v))))))})
-        ($ words
-           {:h (d/h3 "Due by tomorrow")
-            :word-ids-hook word-ids-hook
-            :dispatch (dispatch-prop handle-effect)})
-        (d/div {:style {:margin "2rem" :display "flex" :gap "10px"}}
-               (d/button {:on-click #(handle-effect [[:bring-in-random]])
-                          :class ["btn" "btn-primary"]} "Bring in random")
-               (d/button {:on-click #(handle-effect [[:synchronize]])
-                          :class ["btn" "btn-primary"]} "Synchronize")
-               ($ word-adder {:dispatch (dispatch-prop handle-effect)})
-               ($ state-view)))
-      (d/div (str active-view)))))
+              :word-ids-hook words-not-due-hook})
+          #_($ words
+               {:h (d/h3 "Due now!")
+                :dispatch (dispatch-prop handle-effect)
+                :word-ids-hook
+                (c-a an-atm [:words]
+                     (comp
+                       keys
+                       (partial into {} (filter (fn [[_ v]] (:due-now v))))))})
+          ($ words
+             {:h (d/h3 "Due by tomorrow")
+              :word-ids-hook word-ids-hook
+              :dispatch (dispatch-prop handle-effect)})
+          (d/div {:style {:margin "2rem" :display "flex" :gap "10px"}}
+                 (d/button {:on-click #(handle-effect [[:bring-in-random]])
+                            :class ["btn" "btn-primary"]} "Bring in random")
+                 (d/button {:on-click #(handle-effect [[:synchronize]])
+                            :class ["btn" "btn-primary"]} "Synchronize")
+                 ($ word-adder {:dispatch (dispatch-prop handle-effect)})
+                 ($ state-view)))
+        (d/div (str active-view)))))
 
 (defonce root (rdom/createRoot (js/document.getElementById "app")))
 (.render root ($ app))
