@@ -80,6 +80,20 @@
             concat
             ids))))))
 
+(defn lockout-dispatch
+  "Don't dispatch f until t msec have passed since last time"
+  ([f]
+   (lockout-dispatch 1000 f))
+  ([t f]
+   (let [x (atom nil)
+         timeout-id (atom (js/setTimeout #(reset! x nil) t))]
+     (fn [& args]
+       (when (nil? @x)
+         (js/clearTimeout @timeout-id)
+         (reset! x true)
+         (reset! timeout-id (js/setTimeout #(reset! x nil) t))
+         (apply f args))))))
+
 (defn effect-dispatcher [& intents]
   (doseq [intent intents]
     (handle-effect intent)))
