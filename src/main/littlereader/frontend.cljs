@@ -16,7 +16,7 @@
                                    c-a
                                    connect-chan]]))
 
-(def img-host-url "https://brooklyn.ambergers.name/littlereader-images")
+(def img-host-url "https://brooklyn.ambergers.name/littlereader-images/")
 (def ca (partial c-a an-atm))
 (defn set-background-color [color]
   (set! (.-backgroundColor (.-style (.-body js/document))) color))
@@ -66,6 +66,7 @@
           (d/span
             {:style
              {:cursor "pointer" :width "15%"
+              :border-radius "35%"
               :background-color (x attempt->color)}
              :on-click
              #(dispatch [(if (x s) :unstage-card :stage-card) x])}
