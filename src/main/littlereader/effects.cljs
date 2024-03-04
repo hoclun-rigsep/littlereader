@@ -121,3 +121,9 @@
      (let [new-word (<! (anki/bring-in-random-new-card))]
        (swap! an-atm assoc :latest-random-new-word new-word)
        (handle-effect [[:add-word] new-word])))))
+(defmethod handle-effect
+  :advance
+  ([[[typ path] cnt]] (swap! an-atm update :current #(min (inc %) (dec cnt)))))
+(defmethod handle-effect
+  :goback
+  ([[[typ path] cnt]] (swap! an-atm update :current #(max 0 (dec %)))))
