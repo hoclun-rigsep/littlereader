@@ -91,7 +91,7 @@
 (defnc word-at-a-time [{:keys [dispatch word-ids-hook d d']}]
   (let [[word-ids _] word-ids-hook
         [state set-state] (helix.hooks/use-state #{})
-        [current set-current] (ca [:current])
+        [current] (ca [:current])
         [id wrd] (get (vec state) current)
         [img? set-img?] (helix.hooks/use-state nil)
         [show-img? set-show-img?] (helix.hooks/use-state nil) ]
@@ -104,12 +104,14 @@
         (set-background-color "#ccc")
         (go (set-state (shuffle (<! (anki/cards->words' word-ids)))))))
     (helix.hooks/use-effect
-      [current] (set-img? nil) (set-show-img? nil))
+      [current]
+      (set-img? nil) (set-show-img? nil))
     (d/div
       {:style {:padding "3vw" :background-color "#ccc"}}
       (d/div {:style {:float "right" :margin "2rem"}}
-             (d/button {:class  ["btn" "btn-lg" "btn-primary"]
-                        :on-click #(dispatch [[:change-active-view] :landing])} \⨯))
+             (d/button {:class ["btn" "btn-lg" "btn-primary"]
+                        :on-click #(dispatch [[:change-active-view] :landing])}
+                       \⨯))
       ;; add delay before showing 
       ($ word-you-can-stage
          {:id id :word wrd
@@ -121,11 +123,13 @@
                 (d [[:advance] (count state)])
                 (do (set-show-img? true)
                     (js/setTimeout
-                      #(.scrollIntoView (aget (js/document.getElementsByTagName "img") 0))
+                      #(.scrollIntoView
+                         (aget (js/document.getElementsByTagName "img") 0))
                       200)))
               (apply (dispatch-prop d' id) args)))})
       (when wrd
-        (d/img {:id "theimage" :style {:display (if show-img? "inherit" "none")}
+        (d/img {:id "theimage"
+                :style {:display (if show-img? "inherit" "none")}
                 :on-click #(dispatch [[:advance] (count state)])
                 :on-load (fn [e] (println "img retrieved for" wrd) (set-img? e))
                 :src (str img-host-url wrd)}))
