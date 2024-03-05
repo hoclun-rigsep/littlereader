@@ -128,7 +128,7 @@
         (d/img {:id "theimage" :style {:display (if show-img? "inherit" "none")}
                 :on-click #(dispatch [[:advance] (count state)])
                 :on-load (fn [e] (println "img retrieved for" wrd) (set-img? e))
-                :src (str img-host-url wrd ".jpg")}))
+                :src (str img-host-url wrd)}))
       (d/br)
       (d/button
         {:style {:width "20vw" :font-size "calc(8vw)"}
