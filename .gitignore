@@ -5,3 +5,5 @@
 /.nrepl-port
 /.clj-kondo/.cache/
 /.rebel_readline_history
+/lemmas.tsv
+/public/
