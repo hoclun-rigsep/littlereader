@@ -95,6 +95,10 @@
         [id wrd] (get (vec state) current)
         [img? set-img?] (helix.hooks/use-state nil)
         [show-img? set-show-img?] (helix.hooks/use-state nil) ]
+    (helix.hooks/use-effect
+      :once
+      ; this shuld be an effect
+      (swap! an-atm assoc :current 0))
     #_(helix.hooks/use-effect
         []
         (set-background-color "#ccc"))
