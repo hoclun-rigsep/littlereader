@@ -131,16 +131,29 @@
   {:pre (seq cards)}
   (act :unsuspend {:cards cards}))
 
+(defn add-note
+  ([front] (add-note front ""))
+  ([front back]
+   (async/map
+     first
+     [(act :addNotes
+           {:notes [{:deckName "Words"
+                     :modelName "Basic"
+                     :fields {:front front
+                              :back back}}]})])))
+
 (defn bring-in-random-new-card
   ([] (bring-in-random-new-card nil))
   ([word]
    (go
      (let [random-new-card-id
-           (if word
+           (if (string? word)
              (->> (<! (words->cards [word]))
                   first)
-             (->> (<! (findCards "is:new"))
-                  rand-nth))]
+             (if (number? word)
+               word
+               (->> (<! (findCards "is:new"))
+                    rand-nth)))]
        (answerCards :good [random-new-card-id])
        (answerCards :good [random-new-card-id])
        (setEaseFactors 1800 [random-new-card-id])
