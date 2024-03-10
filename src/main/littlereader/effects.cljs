@@ -23,7 +23,7 @@
 
 (defmethod handle-effect
   :change-active-view
-  ([[[_typ path] x]]
+  ([[[_typ _path] x]]
    (swap! an-atm assoc :active-view x)))
 (defmethod handle-effect
   :synchronize
@@ -105,14 +105,14 @@
   :inc-state ([[[_ path]]] (swap! an-atm update-in path inc)))
 (defmethod handle-effect
   :add-word
-  ([[[typ path] word]]
+  ([[[_typ _path] word]]
    (go
      (let [id (first (<! (anki/words->cards [word])))]
        (handle-effect [[:unsuspend-word] id])
        (swap! an-atm update-in [:words id] (fnil #(conj % {}) {}))))))
 (defmethod handle-effect
   :unsuspend-word
-  ([[[typ path] id]]
+  ([[[_typ _path] id]]
    (anki/unsuspend [id])))
 (defmethod handle-effect
   :bring-in-random
@@ -123,7 +123,7 @@
        (handle-effect [[:add-word] new-word])))))
 (defmethod handle-effect
   :advance
-  ([[[typ path] cnt]] (swap! an-atm update :current #(min (inc %) (dec cnt)))))
+  ([[[_typ _path] cnt]] (swap! an-atm update :current #(min (inc %) (dec cnt)))))
 (defmethod handle-effect
   :goback
-  ([[[typ path] cnt]] (swap! an-atm update :current #(max 0 (dec %)))))
+  ([[[_typ _path] cnt]] (swap! an-atm update :current #(max 0 (dec %)))))
