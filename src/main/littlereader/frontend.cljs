@@ -185,8 +185,22 @@
         "Show")
       (d/span {:style {:display (if show-state "block" "none")}} (str state)))))
 
+(defnc note-adder [{:keys [dispatch]}]
+  (let [[s s-s] (helix.hooks/use-state "")]
+    (<>
+      (d/input {:value s
+                :on-change #(s-s (.. % -target -value))})
+      (d/button {:class ["btn" "btn-sm" "btn-secondary"]
+                 :disabled (nil? (seq s))
+                 :on-click #(dispatch [[:add-note] s])}
+                "Add"))))
+
 (defnc word-adder [{:keys [dispatch]}]
   (let [[s s-s] (hooks/use-state "")
+        [x _] (connect-chan
+                (go
+                  (let [wrds (<! (anki/findCards "is:new"))]
+                    (<! (anki/cards->words wrds)))))
         [w _] (connect-chan
                 (go
                   (let [wrds (<! (anki/findCards "is:suspended"))]
@@ -253,13 +267,16 @@
              {:h (d/h3 "Due by tomorrow")
               :word-ids-hook word-ids-hook
               :dispatch (dispatch-prop handle-effect)})
-          (d/div {:style {:margin "2rem" :display "flex" :gap "10px"}}
+          (d/div {:style {:margin "2rem"
+                          :display "flex"
+                          :flex-wrap "wrap"
+                          :gap "10px"}}
                  (d/button {:on-click #(handle-effect [[:bring-in-random]])
                             :class ["btn" "btn-primary"]} "Bring in random")
                  (d/button {:on-click #(handle-effect [[:synchronize]])
                             :class ["btn" "btn-primary"]} "Synchronize")
                  ($ word-adder {:dispatch (dispatch-prop handle-effect)})
-                 ($ state-view)))
+                 ($ note-adder {:dispatch (dispatch-prop handle-effect)})))
         (d/div (str active-view)))))
 
 (defonce root (rdom/createRoot (js/document.getElementById "app")))

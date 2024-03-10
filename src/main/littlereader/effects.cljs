@@ -127,3 +127,10 @@
 (defmethod handle-effect
   :goback
   ([[[_typ _path] cnt]] (swap! an-atm update :current #(max 0 (dec %)))))
+(defmethod handle-effect
+  :add-note
+  ([[[_typ _path] wrd]]
+   (go
+     (let [id (<! (anki/add-note wrd))]
+       (anki/bring-in-random-new-card id)
+       (swap! an-atm update-in [:words id] (fnil #(conj % {}) {}))))))
