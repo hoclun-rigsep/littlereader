@@ -18,23 +18,10 @@
     [muuntaja.middleware :as middleware]
     ,))
 
-(comment
-  (do
-    (require '[shadow.cljs.devtools.server])
-    (require '[shadow.cljs.devtools.api])
-    (shadow.cljs.devtools.server/start!)
-    (let [url "http://localhost:8765"]
-      (shadow.cljs.devtools.api/watch
-        :app
-        {:config-merge
-         [{:closure-defines
-           {'littlereader.anki/url url}}]}))))
-
 (defmulti handle-effect (comp first first))
 (defmethod handle-effect :test ([& _] {:reatrd 6}))
 
 (defmulti ring-handler #(string/split (apply str (rest (:uri %2))) #"/"))
-
 
 (defmethod ring-handler ["anki"]
   ([_sys req]
