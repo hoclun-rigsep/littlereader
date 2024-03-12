@@ -85,7 +85,14 @@
           (little-button :again)
           (little-button :hard)
           (little-button :good)
-          (little-button :easy))))))
+          (d/span
+            {:style
+             {:cursor "pointer" :width "15%"
+              :border-radius "35%"
+              :background-color "blue"}
+             :on-click
+             #(dispatch [(if (:easy s) :unstage-card :stage-card) :good])}
+            (if (:easy s) " ⋅  " "    ")))))))
 
 ;; random fonts would be good
 (defnc word-at-a-time [{:keys [dispatch word-ids-hook d d']}]
