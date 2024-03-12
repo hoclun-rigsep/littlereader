@@ -122,8 +122,8 @@
           :style {:background-color "#ccc" :width "94vw" :font-size "calc(20vw)"}
           :dispatch 
           (fn [& args]
-            (let [[[_ x]] args]
-              (if (or (not img?) (#{:easy :good} x))
+            (let [[[_ _]] args]
+              (if (not img?)
                 (d [[:advance] (count state)])
                 (do (set-show-img? true)
                     (js/setTimeout
