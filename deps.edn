@@ -25,6 +25,8 @@
                 "--interactive"
                 "-f"  "rebel-readline.main/-main"]}
 
+  ;; run like this with Anki running locally for dev:
+  ;; clojure -M:dev/reloaded:shadow-watch
   :shadow-watch
   {:extra-deps {nrepl/nrepl {:mvn/version  "1.0.0"}
                 thheller/shadow-cljs {:mvn/version "2.23.3"}
