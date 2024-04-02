@@ -54,7 +54,7 @@
           {:channel (chan 1
                           (comp
                             (map :body)
-                            (map (some-fn :result :error (constantly nil))))
+                            (map (some-fn :result :error (constantly :not-nil))))
                           (fn [e]
                             (js/console.error e)
                             (js/alert "Do we have Anki?")))
