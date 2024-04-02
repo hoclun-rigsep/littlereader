@@ -223,7 +223,13 @@
             keys
             (partial into {} (remove (fn [[_ v]] (:due-by-tomorrow v))))))
      word-ids-hook
+     ;; this one gets you "due right now"
      (c-a an-atm [:words]
+          (comp
+            keys
+            (partial into {} (filter (fn [[_ v]] (:due-now v))))))
+     ;; this one gets you "due by tomorrow""
+     #_(c-a an-atm [:words]
           (comp
             keys
             (partial into {} (filter (fn [[_ v]] (:due-by-tomorrow v))))))]
@@ -255,18 +261,11 @@
              {:h (d/h3 "Some words not due")
               :dispatch (dispatch-prop handle-effect)
               :word-ids-hook words-not-due-hook})
-          #_($ words
-               {:h (d/h3 "Due now!")
+          ($ words
+               {:h (d/h3 "Due now!") #_(d/h3 "Due by tomorrow")
                 :dispatch (dispatch-prop handle-effect)
                 :word-ids-hook
-                (c-a an-atm [:words]
-                     (comp
-                       keys
-                       (partial into {} (filter (fn [[_ v]] (:due-now v))))))})
-          ($ words
-             {:h (d/h3 "Due by tomorrow")
-              :word-ids-hook word-ids-hook
-              :dispatch (dispatch-prop handle-effect)})
+                word-ids-hook})
           (d/div {:style {:margin "2rem"
                           :display "flex"
                           :flex-wrap "wrap"
