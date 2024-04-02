@@ -30,6 +30,7 @@
   :shadow-watch
   {:extra-deps {nrepl/nrepl {:mvn/version  "1.0.0"}
                 thheller/shadow-cljs {:mvn/version "2.23.3"}
+                binaryage/devtools {:mvn/version "1.0.7"}
                 cider/cider-nrepl {:mvn/version  "0.37.0"}
                 cljs-http/cljs-http {:mvn/version "0.1.48"}
                 lilactown/helix {:mvn/version "0.2.0"}}
