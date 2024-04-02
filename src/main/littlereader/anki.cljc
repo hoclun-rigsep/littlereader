@@ -7,6 +7,7 @@
 
 
 #?(:cljs
+   ;; this gets overridden to "http://localhost:8765" in development in littlereader.dev
    (goog-define url "anki")
    :clj
    (def url "http://localhost:8765"))
@@ -47,16 +48,21 @@
    (defn act
      ([action] (act action nil))
      ([action params]
-      (http/post
-        url
-        {:channel (chan 1
-                        (comp
-                          (map :body)
-                          (map (some-fn :result :error (constantly nil)))))
-         :with-credentials? false
-         :json-params (merge {:action (name action)
-                              :version 6}
-                             (when params {:params params}))}))))
+      (try
+        (http/post
+          url
+          {:channel (chan 1
+                          (comp
+                            (map :body)
+                            (map (some-fn :result :error (constantly nil))))
+                          (fn [e]
+                            (js/console.error e)
+                            (js/alert "Do we have Anki?")))
+           :with-credentials? false
+           :json-params (merge {:action (name action)
+                                :version 6}
+                               (when params {:params params}))})
+        (catch :default e (println "dog" e))))))
 
 (defn running? [] (act :version))
 
