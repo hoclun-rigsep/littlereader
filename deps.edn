@@ -28,12 +28,12 @@
   ;; run like this with Anki running locally for dev:
   ;; clojure -M:dev/reloaded:shadow-watch
   :shadow-watch
-  {:extra-deps {nrepl/nrepl {:mvn/version  "1.0.0"}
-                thheller/shadow-cljs {:mvn/version "2.23.3"}
-                binaryage/devtools {:mvn/version "1.0.7"}
-                cider/cider-nrepl {:mvn/version  "0.37.0"}
+  {:extra-deps {refactor-nrepl/refactor-nrepl {:mvn/version "3.10.0"}
+                cider/cider-nrepl {:mvn/version "0.47.1"}
                 cljs-http/cljs-http {:mvn/version "0.1.48"}
-                lilactown/helix {:mvn/version "0.2.0"}}
+                thheller/shadow-cljs {:mvn/version "2.23.3"}
+                lilactown/helix {:mvn/version "0.2.0"}
+                binaryage/devtools {:mvn/version "1.0.7"}}
    :main-opts ["-e"  "(apply require clojure.main/repl-requires)"
                "-m" "littlereader.dev"
                "--main"  "nrepl.cmdline"
