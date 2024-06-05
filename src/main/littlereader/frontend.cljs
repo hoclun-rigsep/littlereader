@@ -100,6 +100,12 @@
         [state set-state] (helix.hooks/use-state #{})
         [current] (ca [:current])
         [id wrd] (get (vec state) current)
+        [right-so-far] (ca [:words]
+                         (comp
+                           count
+                           (partial into {}
+                                    (filter
+                                      (fn [[_ v]] ((some-fn :good :easy) v))))))
         [img? set-img?] (helix.hooks/use-state nil)
         [show-img? set-show-img?] (helix.hooks/use-state nil) ]
     (helix.hooks/use-effect
@@ -122,7 +128,8 @@
       (d/div {:style {:float "right" :margin "2rem"}}
              (d/button {:class ["btn" "btn-lg" "btn-primary"]
                         :on-click #(dispatch [[:change-active-view] :landing])}
-                       \⨯))
+                       \⨯)
+             (d/div {:class ["fs-1" "btn-lg"]} right-so-far))
       ;; add delay before showing 
       ($ word-you-can-stage
          {:id id :word wrd
