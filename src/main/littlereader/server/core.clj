@@ -16,7 +16,9 @@
     [jumblerg.middleware.cors :refer [wrap-cors]]
     [muuntaja.core :as m]
     [muuntaja.middleware :as middleware]
-    ,))
+    ,)
+  
+  (:gen-class))
 
 (defmulti handle-effect (comp first first))
 (defmethod handle-effect :test ([& _] {:reatrd 6}))
