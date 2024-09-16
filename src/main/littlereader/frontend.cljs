@@ -17,7 +17,8 @@
                                    connect-chan
                                    lockout-dispatch]]))
 
-(def img-host-url "https://brooklyn.ambergers.name/littlereader-images/")
+(def img-host-url (or (System/getenv "littlereader_image_url")
+                      "https://brooklyn.ambergers.name/littlereader-images/"))
 (def ca (partial c-a an-atm))
 (defn set-background-color [color]
   (set! (.-backgroundColor (.-style (.-body js/document))) color))
