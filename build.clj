@@ -1,10 +1,17 @@
 (ns build
   (:refer-clojure :exclude [test])
-  (:require [clojure.tools.build.api :as b]))
+  (:require [shadow.cljs.devtools.api :as shadow]
+            [clojure.tools.build.api :as b]))
 
+(def app-name "littlereader")
 (def version "0.1.0-SNAPSHOT")
 (def main 'littlereader.server.core)
 (def class-dir "target/classes")
+(def build-folder "target")
+; folder where we collect files to pack in a jar
+(def jar-content (str build-folder "/classes"))
+(def basis (b/create-basis {:project "deps.edn"}))
+(def uber-file-name  (format  "%s/%s-standalone.jar" build-folder app-name))
 
 (defn test "Run all the tests." [opts]
   (let [basis    (b/create-basis {:aliases [:test]})
@@ -36,3 +43,25 @@
     (println "\nBuilding JAR...")
     (b/uber opts))
   opts)
+
+(defn clean [_]
+  (b/delete {:path build-folder})
+  (println (format "Build folder \"%s\" removed" build-folder)))
+
+(defn uber [_]
+  (clean nil)
+  (shadow/release :app)
+
+  (b/copy-dir {:src-dirs   ["resources"]
+               :target-dir jar-content})
+
+  (b/compile-clj {:basis     basis
+                  :src-dirs ["src"]
+                  :class-dir jar-content})
+
+  (b/uber {:class-dir jar-content
+           :uber-file uber-file-name
+           :basis     basis
+           :main      main})
+
+  (println (format "Uber file created: \"%s\"" uber-file-name)))
