@@ -1,0 +1,62 @@
+# littlereader
+
+## Build
+
+    clojure -T:build uber
+
+## Run
+
+    littlereader_image_url=https://your.images/are/served java -jar target/littlereader-standalone.jar
+
+## Before you Run
+
+Littlereader expects the following:
+
+1. You have [Anki](https://ankisrs.net) running on the server (client doesn't need it)
+2. The [AnkiConnect](https://ankiweb.net/shared/info/2055492159) plugin is
+   configured and working on port 8765 (again, on the server)
+3. You have one Anki deck named "Words" which comprises cards each with a target
+   word on the front and nothing on the back
+4. Optionally, that you're serving image files at littlereader_img_url, each of
+   which is named after a target word, no extension. Those should be scaled and
+   sized for quick loading.
+5. dog
+
+## Extras
+
+This repo has a `lemmas.clj' file that contains a thousand or so frequent
+English lemmas. There's a button in the app that may or may not be working at
+present that will let you add these gradually to your Anki deck without going
+through Anki—you can of course do it in Anki too. I found this approach decent for ramping things up with your
+child—at first he or she sees only ten words and gains confidence; then you add
+them.
+
+## Generating images
+
+    A() {
+        cd /var/www/html/littlereader-images
+        local word;
+        local url;
+        while [[ -n $1 ]];
+        do
+            word="$1"
+            url="$2"
+            shift 2
+            wget -O "$word" "$url"
+            mogrify -geometry 800x "$word"
+            timg "$word"
+        done
+    }
+
+This is a bash function for preparing image files from stuff you found on Google
+Image search or whatever. Usage:
+
+    A dog https://images.com/pic-of-dog.jpg
+
+Dependencies:
+
+* Imagemagick cli
+* wget
+* [timg](https://github.com/hzeller/timg), optional.
+
+Run it on the server and change `/var/www/...` to your actual htdoc dir.
