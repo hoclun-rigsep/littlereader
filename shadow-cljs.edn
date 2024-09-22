@@ -3,7 +3,7 @@
  ["src/dev"
   "src/main"
   "src/test"]
- :deps true
+ :deps {:aliases [:shadow-watch]}
  :nrepl {:write-port-file true}
  :dev-http {8080 "resources/public"}
  :builds
