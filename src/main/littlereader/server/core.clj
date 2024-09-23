@@ -25,6 +25,8 @@
 
 (defmulti ring-handler #(string/split (apply str (rest (:uri %2))) #"/"))
 
+(defmethod ring-handler ["favicon.ico"] ([_ _] nil))
+
 (defmethod ring-handler ["anki"]
   ([_sys req]
    (let [url "http://localhost:8765"]
