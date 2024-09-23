@@ -62,7 +62,7 @@
            :json-params (merge {:action (name action)
                                 :version 6}
                                (when params {:params params}))})
-        (catch :default e (println "dog" e))))))
+        (catch :default e (println "act: " e))))))
 
 (defn running? [] (act :version))
 
