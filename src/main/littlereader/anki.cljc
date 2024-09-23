@@ -54,6 +54,7 @@
           {:channel (chan 1
                           (comp
                             (map :body)
+                            (map #(if (nil? (:error %)) % (js/console.warn %)))
                             (map (some-fn :result :error (constantly :not-nil))))
                           (fn [e]
                             (js/console.error e)
