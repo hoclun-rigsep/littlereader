@@ -122,7 +122,8 @@
         (go (set-state (shuffle (<! (anki/cards->words' word-ids)))))))
     (helix.hooks/use-effect
       [current]
-      (set-img? nil) (set-show-img? nil))
+      (set-img? nil)
+      (set-show-img? nil))
     (d/div
       {:style {:padding "3vw" :background-color "#ccc"}}
       (d/div {:style {:float "right" :margin "2rem"}}
