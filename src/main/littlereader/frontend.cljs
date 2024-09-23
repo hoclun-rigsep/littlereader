@@ -206,11 +206,11 @@
   (let [[s s-s] (hooks/use-state "")
         [x _] (connect-chan
                 (go
-                  (let [wrds (<! (anki/findCards "is:new"))]
+                  (when-let [wrds (seq (<! (anki/findCards "is:new")))]
                     (<! (anki/cards->words wrds)))))
         [w _] (connect-chan
                 (go
-                  (let [wrds (<! (anki/findCards "is:suspended"))]
+                  (when-let [wrds (seq (<! (anki/findCards "is:suspended")))]
                     (<! (anki/cards->words wrds)))))]
     (<>
       (d/select {:value s
