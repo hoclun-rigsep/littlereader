@@ -11,5 +11,8 @@
        [{:closure-defines
          {'littlereader.anki/url url}}]})))
 
+(comment
+  (shadow.cljs.devtools.api/watch :app))
+
 (defn -main [& _]
   (shadow-watch))
