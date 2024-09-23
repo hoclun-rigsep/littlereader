@@ -140,13 +140,16 @@
 (defn add-note
   ([front] (add-note front ""))
   ([front back]
-   (async/map
-     first
-     [(act :addNotes
-           {:notes [{:deckName "Words"
-                     :modelName "Basic"
-                     :fields {:front front
-                              :back back}}]})])))
+   (go
+     (let [x (<! (act :addNotes
+                      {:notes [{:deckName "Words"
+                                :modelName "Basic"
+                                :fields {:front front
+                                         :back back}}]}))]
+       (first
+         (if (= x :not-nil)
+           (<! (words->cards ["dog"]))
+           (first x)))))))
 
 (defn bring-in-random-new-card
   ([] (bring-in-random-new-card nil))
