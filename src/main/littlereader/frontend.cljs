@@ -215,7 +215,8 @@
     (<>
       (d/select {:value s
                  :on-change #(s-s (.. % -target -value))}
-                (for [i lemmas :when ((set w) i)] (d/option {:key i} i)))
+                (for [i lemmas #_#_ :when ((set w) i)]
+                  (d/option {:key i} i)))
       (d/button {:class ["btn" "btn-sm" "btn-secondary"]
                  :on-click #(dispatch [[:add-word] s])}
                 "Add"))))
