@@ -29,7 +29,7 @@
          :uber-file (format "target/%s-%s.jar" "littlereader" version)
          :basis (b/create-basis {})
          :class-dir class-dir
-         :src-dirs ["src"]
+         :src-dirs ["src/main"]
          :ns-compile [main]))
 
 (defn ci "Run the CI pipeline of tests (and build the uberjar)." [opts]
@@ -56,7 +56,7 @@
                :target-dir jar-content})
 
   (b/compile-clj {:basis     basis
-                  :src-dirs ["src"]
+                  :src-dirs ["src/main"]
                   :class-dir jar-content})
 
   (b/uber {:class-dir jar-content
