@@ -26,7 +26,7 @@
                 thheller/shadow-cljs {:mvn/version "2.23.3"}
                 lilactown/helix {:mvn/version "0.2.0"}
                 binaryage/devtools {:mvn/version "1.0.7"}}
-   #_#_:main-opts ["-e"  "(apply require clojure.main/repl-requires)"
+   :main-opts ["-e"  "(apply require clojure.main/repl-requires)"
                "-m" "littlereader.dev"
                "--main"  "nrepl.cmdline"
                "--middleware"  "[cider.nrepl/cider-middleware]"
