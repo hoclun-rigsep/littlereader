@@ -1,5 +1,5 @@
 {:paths ["src/main" "resources"]
- :deps {org.clojure/clojure {:mvn/version "1.11.1"}
+ :deps {org.clojure/clojure {:mvn/version "1.12.0"}
         org.clojure/core.async {:mvn/version "1.6.681"}
         dev.weavejester/medley {:mvn/version "1.7.0"}
         ring/ring {:mvn/version "1.11.0"}
@@ -15,12 +15,13 @@
   {:main-opts
    ["-m" "littlereader.server.core"]}
 
+  ;; This is my dev dependencies in deps.edn. Is this ideal?
   ;; run like this with Anki running locally for dev:
   ;; clojure -M:dev/reloaded:shadow-watch
   :shadow-watch
   {:extra-paths ["dev"]
    :extra-deps {refactor-nrepl/refactor-nrepl {:mvn/version "3.10.0"}
-                cider/cider-nrepl {:mvn/version "0.47.1"}
+                cider/cider-nrepl {:mvn/version "0.50.2"}
                 cljs-http/cljs-http {:mvn/version "0.1.48"}
                 thheller/shadow-cljs {:mvn/version "2.23.3"}
                 lilactown/helix {:mvn/version "0.2.0"}
