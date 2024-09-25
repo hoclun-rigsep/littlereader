@@ -103,7 +103,7 @@
   :but-click ([[[typ path] arg1]] (println typ path arg1)))
 (defmethod handle-effect
   :inc-state ([[[_ path]]] (swap! an-atm update-in path inc)))
-(defmethod handle-effect
+#_(defmethod handle-effect
   :add-word
   ([[[_typ _path] word]]
    (go

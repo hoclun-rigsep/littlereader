@@ -131,7 +131,7 @@
                         :on-click #(dispatch [[:change-active-view] :landing])}
                        \⨯)
              (d/div {:class ["fs-1" "btn-lg"]} right-so-far))
-      ;; add delay before showing 
+      ;; add delay before showing
       ($ word-you-can-stage
          {:id id :word wrd
           :style {:background-color "#ccc" :width "94vw" :font-size "calc(20vw)"}
@@ -219,7 +219,7 @@
                 (for [i lemmas #_#_ :when ((set w) i)]
                   (d/option {:key i} i)))
       (d/button {:class ["btn" "btn-sm" "btn-secondary"]
-                 :on-click #(dispatch [[:add-word] s])}
+                 :on-click #(dispatch [[:add-note] s])}
                 "Add"))))
 
 (defnc app []
